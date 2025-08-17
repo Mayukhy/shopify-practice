@@ -82,7 +82,7 @@ if (!customElements.get('product-form')) {
                 'modalClosed',
                 () => {
                   setTimeout(() => {
-                    CartPerformance.measure("add:paint-updated-sections", () => {
+                    CartPerformance.measure('add:paint-updated-sections', () => {
                       this.cart.renderContents(response);
                     });
                   });
@@ -91,7 +91,7 @@ if (!customElements.get('product-form')) {
               );
               quickAddModal.hide(true);
             } else {
-              CartPerformance.measure("add:paint-updated-sections", () => {
+              CartPerformance.measure('add:paint-updated-sections', () => {
                 this.cart.renderContents(response);
               });
             }
@@ -99,13 +99,34 @@ if (!customElements.get('product-form')) {
           .catch((e) => {
             console.error(e);
           })
-          .finally(() => {
+          .finally(async() => {
+            // Dispatch a custom event for product added to cart
+              const response = await fetch(`${routes.cart_url}.js`);
+              const cartData = await response.json();
+              const isCustomModal = this.closest('.custom-quick-add-modal__main');
+              function matchCondition() {
+                let isTrue = false;
+                const conditionSelectedVariants = ["md","Black"];
+                cartData.items.forEach(item => {
+                  const condition = item.variant_options.every((option, idx) => option === conditionSelectedVariants[idx]);
+                  if (condition) isTrue = true;
+                });
+                return isTrue;
+              }
+              const isPresent = cartData.items.find(item => item.id === window.productTobeUpselled.product.variants[0].id);
+
+              if (!isPresent && matchCondition() && isCustomModal) {
+                const productAddedEvent = new CustomEvent('product:added');
+                this.dispatchEvent(productAddedEvent);
+                console.log(`the product ${window.productTobeUpselled.product.title} yet to be added to the cart.`);
+              }
+
             this.submitButton.classList.remove('loading');
             if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
             if (!this.error) this.submitButton.removeAttribute('aria-disabled');
             this.querySelector('.loading__spinner').classList.add('hidden');
 
-            CartPerformance.measureFromEvent("add:user-action", evt);
+            CartPerformance.measureFromEvent('add:user-action', evt);
           });
       }
 
