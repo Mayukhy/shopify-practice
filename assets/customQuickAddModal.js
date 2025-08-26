@@ -35,11 +35,18 @@ class CustomQuickAddModal extends HTMLElement {
 
     // Initialize variant selections
     this.initVariantListeners();
+
+    subscribe(PUB_SUB_EVENTS.quickaddModalClose, () => {
+      this.closeModal();
+    });
   }
 
   disconnectedCallback() {
     // Clean up event listeners
     this.removeEventListeners();
+    unsubscribe(PUB_SUB_EVENTS.quickaddModalClose, () => {
+      this.closeModal();
+    });
   }
 
   initializeElements() {
