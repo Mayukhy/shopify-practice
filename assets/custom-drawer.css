@@ -1,0 +1,101 @@
+.custom-desktop-header-drawer__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+custom-desktop-drawer {
+  opacity: 0;
+  z-index: -1;
+  display: none;
+}
+custom-desktop-drawer.is-open {
+  opacity: 1;
+  z-index: 1;
+  display: block;
+}
+
+.custom-drawer__opener {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.custom-desktop-header-drawer__main .list-menu {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  position: relative;
+}
+
+.custom-desktop-header-drawer__main .list-menu a {
+  text-decoration: none;
+  color: black;
+}
+
+.custom-drawer__mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 10px 50px;
+}
+
+.custom-drawer__list-menu,
+.custom-drawer-child__list-menu,
+.custom-drawer-grand-child__list-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  list-style: none;
+  padding-left: 0;
+}
+
+.custom-drawer__list-menu-item-link:is(.parent, .child, .grand-child) {
+  text-decoration: none;
+  color: black;
+  position: relative;
+}
+
+.custom-drawer-child__list-menu-item-submenu,
+.custom-drawer-grand-child__list-menu-item-submenu {
+  position: absolute;
+  top: 0;
+  margin-left: 100px;
+  margin-top: 27px;
+  opacity: 0;
+  z-index: -1;
+  transition: all 0.3s ease;
+}
+
+.custom-drawer-grand-child__list-menu-item-submenu {
+  margin-top: 0;
+}
+
+.custom-drawer-child__list-menu-item-submenu.is-visible,
+.custom-drawer-grand-child__list-menu-item-submenu.is-visible {
+  opacity: 1;
+  z-index: 1;
+}
+
+.custom-drawer__list-menu-item-link:is(.parent, .child).is-visible::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="black" stroke-width="2" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M4 8h8M8 4l4 4-4 4"/></svg>');
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+@media screen and (max-width: 749px) {
+  .custom-desktop-header-drawer__main {
+    display: none;
+  }
+}
