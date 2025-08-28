@@ -477,7 +477,16 @@
 
               {%- when 'variant_picker' -%}
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
-              {%- when 'buy_buttons' -%}
+              <div class="custom-product-variant-picker__wrapper">
+                <p class="custom-product-variant-picker__label">select option: <span></span></p>
+                <input value="option1" type="radio" name="custom-option" id="custom-option-1">
+                <label for="custom-option-1">Custom Option 1</label>
+                <input value="option2" type="radio" name="custom-option" id="custom-option-2">
+                <label for="custom-option-2">Custom Option 2</label>
+                <input value="option3" type="radio" name="custom-option" id="custom-option-3">
+                <label for="custom-option-3">Custom Option 3</label>
+              </div>
+                {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,
                   product: product,

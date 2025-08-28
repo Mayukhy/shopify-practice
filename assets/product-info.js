@@ -13,8 +13,9 @@ if (!customElements.get('product-info')) {
 
       constructor() {
         super();
-
         this.quantityInput = this.querySelector('.quantity__input');
+        this.customVariantContainer = this.querySelector('.custom-product-variant-picker__wrapper');
+        this.checkedRadio = this.customVariantContainer?.querySelector('input[type="radio"]:checked');
       }
 
       connectedCallback() {
@@ -27,6 +28,8 @@ if (!customElements.get('product-info')) {
 
         this.initQuantityHandlers();
         this.dispatchEvent(new CustomEvent('product-info:loaded', { bubbles: true }));
+        this.initializeCustomVariant();
+        this.customVariantContainer?.addEventListener('change', this.handleCustomOption.bind(this));
       }
 
       addPreProcessCallback(callback) {
@@ -48,6 +51,39 @@ if (!customElements.get('product-info')) {
       disconnectedCallback() {
         this.onVariantChangeUnsubscriber();
         this.cartUpdateUnsubscriber?.();
+        this.customVariantContainer?.removeEventListener('change', this.handleCustomOption.bind(this));
+      }
+
+      initializeCustomVariant() {
+        const allRadios = this.customVariantContainer.querySelectorAll('input[type="radio"]');
+        const url = new URL(window.location.href);
+        
+        if (url.searchParams.get('custom_option')) {
+          this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent = url.searchParams.get('custom_option');
+          allRadios.forEach((input) => {
+            input.checked = input.value === url.searchParams.get('custom_option');
+          });
+        }
+        else{
+          this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent = allRadios[0].value;
+          allRadios.forEach((input) => {
+            input.checked = input.value === allRadios[0].value;
+          });
+        }
+      }
+
+      handleCustomOption(event) {
+       if (event.target.name.startsWith('custom')) {
+         const selectedValue = event.target.value;
+         this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent = selectedValue;
+         this.addCustomVariantToUrl(event);
+       }
+      }
+
+      addCustomVariantToUrl(event) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('custom_option', event.target.value);
+        window.history.replaceState({}, '', url);
       }
 
       initializeProductSwapUtility() {
@@ -69,7 +105,6 @@ if (!customElements.get('product-info')) {
         this.pendingRequestUrl = productUrl;
         const shouldSwapProduct = this.dataset.url !== productUrl;
         const shouldFetchFullPage = this.dataset.updateUrl === 'true' && shouldSwapProduct;
-
         this.renderProductInfo({
           requestUrl: this.buildRequestUrlWithParams(productUrl, selectedOptionValues, shouldFetchFullPage),
           targetId: target.id,
@@ -187,6 +222,7 @@ if (!customElements.get('product-info')) {
           };
 
           updateSourceFromDestination('price');
+          updateSourceFromDestination('btn-price');
           updateSourceFromDestination('Sku', ({ classList }) => classList.contains('hidden'));
           updateSourceFromDestination('Inventory', ({ innerText }) => innerText === '');
           updateSourceFromDestination('Volume');
@@ -208,6 +244,16 @@ if (!customElements.get('product-info')) {
               variant,
             },
           });
+          setTimeout(() => {
+            this.customVariantContainer = this.querySelector('.custom-product-variant-picker__wrapper');
+            if (this.customVariantContainer) {
+              this.initializeCustomVariant();
+              // Remove previous event listeners to avoid duplicates
+              this.customVariantContainer.replaceWith(this.customVariantContainer.cloneNode(true));
+              this.customVariantContainer = this.querySelector('.custom-product-variant-picker__wrapper');
+              this.customVariantContainer.addEventListener('change', this.handleCustomOption.bind(this));
+            }
+          }, 100);
         };
       }
 
@@ -222,12 +268,17 @@ if (!customElements.get('product-info')) {
       }
 
       updateURL(url, variantId) {
+        const checkedCustomRadio = this.customVariantContainer.querySelector('input[type="radio"]:checked');
         this.querySelector('share-button')?.updateUrl(
           `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
         );
 
         if (this.dataset.updateUrl === 'false') return;
-        window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}` : ''}`);
+        if (checkedCustomRadio) {
+          window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}&custom_option=${checkedCustomRadio.value}` : ''}`);
+        } else {
+          window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}` : ''}`);
+        }
       }
 
       setUnavailable() {

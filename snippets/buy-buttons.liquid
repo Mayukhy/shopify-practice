@@ -43,6 +43,8 @@
         novalidate: 'novalidate',
         data-type: 'add-to-cart-form'
       -%}
+      <label for="message-{{ section.id }}">add message</label>
+      <textarea class="product-form__message" id="message-{{ section.id }}" name="message"></textarea>
         <input
           type="hidden"
           name="id"
@@ -91,6 +93,14 @@
                 {{ 'products.product.add_to_cart' | t }}
               {%- endif -%}
             </span>
+                <div id="btn-price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+                  {%- render 'price',
+                    product: product,
+                    use_variant: true,
+                    show_badges: true,
+                    price_class: 'price--large'
+                  -%}
+                </div>
             {%- render 'loading-spinner' -%}
           </button>
           {%- if show_dynamic_checkout -%}
