@@ -1,0 +1,36 @@
+.custom-product-variant-picker__wrapper {
+    position: relative;
+}
+.custom-product-variant-picker__wrapper img {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    border-radius: 50%;
+}
+.custom-product-variant-picker__options {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.custom-option-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 4px;
+    font-size: 14px;
+    flex-wrap: nowrap;
+    position: relative;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 30px;
+    border: 1px solid rgb(86, 84, 84);
+}
+.custom-option-label:has(input:checked) {
+    background-color: black;
+    color: whitesmoke;
+}
+.custom-option-input {
+    position: absolute;
+    opacity: 0;
+}

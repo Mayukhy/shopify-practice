@@ -15,6 +15,7 @@
   {{ 'component-slider.css' | asset_url | stylesheet_tag }}
   {{ 'component-rating.css' | asset_url | stylesheet_tag }}
   {{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+  {{ 'custom-variants.css' | asset_url | stylesheet_tag }}
 
   {% unless product.has_only_default_variant %}
     {{ 'component-product-variant-picker.css' | asset_url | stylesheet_tag }}
@@ -38,6 +39,10 @@
       }
     }
   {%- endstyle -%}
+
+  {% liquid
+    assign custom_variants = product.metafields.custom.custom_variants.value
+  %}
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
@@ -478,17 +483,25 @@
               {%- when 'variant_picker' -%}
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
 
-              {% comment %} 4th or extra Custom variant Option (will come form variant metafield basically) {% endcomment %}
-              <div class="custom-product-variant-picker__wrapper">
-                <p class="custom-product-variant-picker__label">select option: <span></span></p>
-                <input value="option1" type="radio" name="custom-option" id="custom-option-1">
-                <label for="custom-option-1">Custom Option 1</label>
-                <input value="option2" type="radio" name="custom-option" id="custom-option-2">
-                <label for="custom-option-2">Custom Option 2</label>
-                <input value="option3" type="radio" name="custom-option" id="custom-option-3">
-                <label for="custom-option-3">Custom Option 3</label>
-              </div>
-                {%- when 'buy_buttons' -%}
+                {% comment %} 4th or extra Custom variant Option (will come form metafield ref of metaObject basically) {% endcomment %}
+                 {% if custom_variants %}
+                  <div class="custom-product-variant-picker__wrapper">
+                    <p class="custom-product-variant-picker__label">Material: <span></span></p>
+                    <div class="custom-product-variant-picker__options">
+                      {% for option in custom_variants %}
+                        <label class="custom-option-label" for="custom-option-{{ forloop.index }}">
+                          <img
+                          width="50"
+                          height="50"
+                          src="{{ option.material_visuals | img_url: 'small' }}" alt="{{ option.display_name }}">
+                          <input class="custom-option-input" value="{{ option.display_name }}" type="radio" name="custom-option" id="custom-option-{{ forloop.index }}">
+                          {{ option.display_name }}
+                        </label>
+                      {% endfor %}
+                    </div>
+                  </div>
+                 {% endif %}
+              {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,
                   product: product,
