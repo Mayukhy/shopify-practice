@@ -11,13 +11,15 @@ if (!customElements.get('product-form')) {
         this.cart = document.querySelector('cart-notification') || document.querySelector('cart-drawer');
         this.submitButton = this.querySelector('[type="submit"]');
         this.submitButtonText = this.submitButton.querySelector('span');
-
+        this.messageText = this.querySelector('.product-form__message');
         if (document.querySelector('cart-drawer')) this.submitButton.setAttribute('aria-haspopup', 'dialog');
 
         this.hideErrors = this.dataset.hideErrors === 'true';
       }
 
       onSubmitHandler(evt) {
+        const customOption = document.querySelector('.custom-product-variant-picker__wrapper input[type="radio"]:checked');
+
         evt.preventDefault();
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
@@ -38,6 +40,8 @@ if (!customElements.get('product-form')) {
             this.cart.getSectionsToRender().map((section) => section.id)
           );
           formData.append('sections_url', window.location.pathname);
+          customOption && formData.append('properties[Custom Option]', customOption.value);
+          this.messageText && formData.append('properties[Message]', this.messageText.value);
           this.cart.setActiveElement(document.activeElement);
         }
         config.body = formData;
@@ -118,7 +122,6 @@ if (!customElements.get('product-form')) {
               if (!isPresent && matchCondition() && isCustomModal) {
                 const productAddedEvent = new CustomEvent('product:added');
                 this.dispatchEvent(productAddedEvent);
-                console.log(`the product ${window.productTobeUpselled.product.title} yet to be added to the cart.`);
               }
 
             this.submitButton.classList.remove('loading');
