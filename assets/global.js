@@ -1330,3 +1330,21 @@ class CartPerformance {
     );
   }
 }
+
+// Megamenu hover effect
+if (!navigator.userAgent.match(/Mobile|Windows Phone|Lumia|Android|webOS|iPhone|iPod|Blackberry|PlayBook|BB10|Opera Mini|\bCrMo\/|Opera Mobi|Tablet|iPad/i)) {
+  document.querySelectorAll('.mega-menu.js-hoverable').forEach((megamenuItem) => {
+    const summary = megamenuItem.querySelector('summary');
+    megamenuItem.addEventListener('mouseenter', (event) => {
+      summary.setAttribute('aria-expanded', !event.currentTarget.closest('details').hasAttribute('open'));
+      event.currentTarget.setAttribute('open', 'true');
+    });
+    megamenuItem.addEventListener('mouseleave', (event) => {
+      summary.setAttribute('aria-expanded', !event.currentTarget.closest('details').hasAttribute('open'));
+
+      event.currentTarget.removeAttribute('open');
+      console.log("current target element:", event.currentTarget);
+      console.log("current target content:", event.currentTarget.closest('.mega-menu__content'));
+    });
+  });
+}

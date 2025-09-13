@@ -1,3 +1,17 @@
+.header-wrapper {
+  height: 46px;
+}
+.header__inline-menu {
+  height: 46px;
+}
+.list-menu--inline {
+  height: 100%;
+}
+header-menu {
+  display: flex;
+  height: 100%;
+}
+
 .list-menu--right {
   right: 0;
 }

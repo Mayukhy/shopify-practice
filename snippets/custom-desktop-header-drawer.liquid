@@ -1,0 +1,89 @@
+{{ 'custom-drawer.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'custom-desktop-drawer.js' | asset_url }}" defer></script>
+<script src="{{ 'custom-drawer-opener.js' | asset_url }}" defer></script>
+<nav class="custom-desktop-header-drawer__main">
+  <custom-drawer-opener>
+    <span class="custom-drawer__opener">
+      {{- 'icon-hamburger.svg' | inline_asset_content -}}
+      {% comment %} {{- 'icon-close.svg' | inline_asset_content -}} {% endcomment %}
+    </span>
+  </custom-drawer-opener>
+  <ul class="list-menu list-menu--inline">
+    {% for link in section.settings.menu.links %}
+      <li
+        data-link="parent-{{ link.title }}"
+        class="list-menu__item"
+      >
+        <a href="{{ link.url }}" class="list-menu__item-link">{{ link.title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% comment %} mega menu {% endcomment %}
+  <custom-desktop-drawer>
+    <div class="custom-drawer__mega-menu">
+      <ul class="custom-drawer__list-menu">
+        {% for link in section.settings.menu.links %}
+          <li
+            data-link="parent-{{ link.title }}"
+            class="custom-drawer__list-menu-item"
+          >
+            <a
+              data-li-link="parent-{{ link.title }}"
+              href="{{ link.url }}"
+              class="custom-drawer__list-menu-item-link parent"
+            >
+              {{- link.title -}}
+            </a>
+            {% comment %} for the child links submenu {% endcomment %}
+            <div
+              data-child-links="parent-{{ link.title }}"
+              class="custom-drawer-child__list-menu-item-submenu"
+            >
+              <ul class="custom-drawer-child__list-menu">
+                {% for child in link.links %}
+                  <li
+                    data-link="child-{{ child.title }}-parent-{{ link.title }}"
+                    class="custom-drawer-child__list-menu-item"
+                  >
+                    <a
+                      data-li-link="child-{{ child.title }}-parent-{{ link.title }}"
+                      href="{{ child.url }}"
+                      class="custom-drawer__list-menu-item-link child"
+                    >
+                      {{- child.title -}}
+                    </a>
+                    {% comment %} for the grandchild links submenu {% endcomment %}
+                    {% if child.links %}
+                      <div
+                        data-grand-child-links="child-{{ child.title }}-parent-{{ link.title }}"
+                        class="custom-drawer-grand-child__list-menu-item-submenu"
+                      >
+                        <ul class="custom-drawer-grand-child__list-menu">
+                          {% for grandchild in child.links %}
+                            <li
+                              data-link="grandchild-{{ grandchild.title }}-child-{{ child.title }}-parent-{{ link.title }}"
+                              class="custom-drawer-grand-child__list-menu-item"
+                            >
+                              <a
+                                data-li-link="grandchild-{{ grandchild.title }}-child-{{ child.title }}-parent-{{ link.title }}"
+                                href="{{ grandchild.url }}"
+                                class="custom-drawer__list-menu-item-link grand-child"
+                              >
+                                {{- grandchild.title -}}
+                              </a>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </custom-desktop-drawer>
+</nav>
