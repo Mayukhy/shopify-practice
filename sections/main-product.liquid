@@ -698,6 +698,8 @@
                 </product-recommendations>
               {%- when 'icon-with-text' -%}
                 {% render 'icon-with-text', block: block %}
+              {%- when 'bundle' -%}
+                {% render 'bundle-products', product: product, block: block %}
             {%- endcase -%}
           {%- endfor -%}
           <a href="{{ product.url }}" class="link product__view-details animate-arrow">
@@ -886,6 +888,34 @@
       "type": "quantity_selector",
       "name": "t:sections.main-product.blocks.quantity_selector.name",
       "limit": 1
+    },
+    {
+      "type": "bundle",
+      "name": "Bundle products",
+      "settings": [
+        {
+          "type": "text",
+          "id": "bundle_heading",
+          "label": "Bundle Heading",
+          "default": "Complete the look"
+        },
+        {
+          "type": "select",
+          "id": "product_list_input_type",
+          "label": "Product List Input Type",
+          "options": [
+            {
+              "value": "checkbox",
+              "label": "Checkbox"
+            },
+            {
+              "value": "radio",
+              "label": "Radio"
+            }
+          ],
+          "default": "checkbox"
+        }
+      ]
     },
     {
       "type": "variant_picker",
