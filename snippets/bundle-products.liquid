@@ -24,6 +24,9 @@
 {% comment %} Bundle products styling {% endcomment %}
 {% if bundle_products != blank %}
   <style>
+    .bundles__accordion {
+      margin-bottom: -1.5rem;
+    }
     /* Bundle products list container */
     .bundle-products-list {
       display: flex;
@@ -274,6 +277,7 @@
   {% comment %} Set input type - can be 'radio' for single selection or 'checkbox' for multiple selection {% endcomment %}
   {% assign input_type = block.settings.product_list_input_type %}
   <details
+    class="bundles__accordion"
     id="Details-{{ block.id }}-{{ section.id }}"
     {% if section.settings.open_first_collapsible_row and forloop.first %}
       open
