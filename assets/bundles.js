@@ -21,6 +21,8 @@ class Bundles extends HTMLElement {
     super();
     /** @type {string} Input type for bundle selection ('radio' or 'checkbox') */
     this.inputType = this.dataset.inputType;
+    /** @type {Array<Object>} Array to hold selected bundle products */
+    this.nestedProducts = [];
   }
   /**
    * Called when the element is connected to the DOM
@@ -35,6 +37,7 @@ class Bundles extends HTMLElement {
       this.initializeBundlesInputs();
     }, 300);
     document.addEventListener('bundle:added', this.initializeBundlesInputs.bind(this));
+    document.addEventListener('change:mainProductVariant', this.updateBundleMainProduct.bind(this));
     this.addEventListener('change', this.changeFormWithBundle.bind(this));
     this.initializeAccordionToggle();
   }
@@ -74,6 +77,19 @@ class Bundles extends HTMLElement {
         });
       }
     }
+  }
+
+  /**
+   * Updates the main product variant ID in the bundle products data
+   *
+   * @memberof Bundles
+   * @returns {void}
+   */
+  updateBundleMainProduct() {
+    if (this.nestedProducts.length > 0) {
+      this.nestedProducts[0].id = this.mainProductVariantId.value;
+    }
+    this.nestedProducts.map((product) => product.parent_id ? product.parent_id = this.mainProductVariantId.value : product);
   }
 
   /**
@@ -149,12 +165,10 @@ class Bundles extends HTMLElement {
     if (event.target.name === 'bundle_product') {
       if (this.inputType === 'radio') {
         /** @type {Array<Object>} Bundle products array for radio selection */
-        const nestedProducts = [
+        this.nestedProducts = [
           // Add your nested product IDs here
           {
-            /** @type {string} Main product variant ID */
             id: this.mainProductVariantId.value,
-            /** @type {number} Product quantity */
             quantity: 1,
           },
           {
@@ -164,10 +178,10 @@ class Bundles extends HTMLElement {
           },
         ];
         // Store bundle data globally for access in product-form
-        window.bundleProductsData = nestedProducts;
+        window.bundleProductsData = this.nestedProducts;
       } else {
         /** @type {Array<Object>} Bundle products array for checkbox selection */
-        const nestedProducts = [
+        this.nestedProducts = [
           {
             id: this.mainProductVariantId.value,
             quantity: 1,
@@ -175,16 +189,19 @@ class Bundles extends HTMLElement {
         ];
         // Handle checkbox logic if needed
         this.querySelectorAll('.bundle-product__radio[type="checkbox"]:checked').forEach((checkbox) => {
-          nestedProducts.push({
+          this.nestedProducts.push({
             id: checkbox.value,
             quantity: 1,
             parent_id: this.mainProductVariantId.value,
           });
-          window.bundleProductsData = nestedProducts;
+          window.bundleProductsData = this.nestedProducts;
         });
+        console.log(this.nestedProducts);
       }
     }
   }
+
+  
 
   /**
    * Gets the main product variant ID from the product form
