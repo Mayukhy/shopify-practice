@@ -10,7 +10,7 @@
   Usage:
   {% render 'product-media-gallery' %}
 {% endcomment %}
-
+{{ 'media-slider.css' | asset_url | stylesheet_tag }}
 {%- liquid
   if section.settings.hide_variants and variant_images.size == product.media.size
     assign single_media_visible = true
@@ -44,6 +44,7 @@
 
 <media-gallery
   id="MediaGallery-{{ section.id }}"
+  data-section-id="{{ section.id }}"
   role="region"
   {% if section.settings.enable_sticky_info %}
     class="product__column-sticky"
@@ -52,7 +53,7 @@
   data-desktop-layout="{{ section.settings.gallery_layout }}"
 >
   <div id="GalleryStatus-{{ section.id }}" class="visually-hidden" role="status"></div>
-  <slider-component id="GalleryViewer-{{ section.id }}" class="slider-mobile-gutter">
+  <slider-component id="GalleryViewer-{{ section.id }}" class="product-media-gallery slider-mobile-gutter">
     <a class="skip-to-content-link button visually-hidden quick-add-hidden" href="#ProductInfo-{{ section.id }}">
       {{ 'accessibility.skip_to_product_info' | t }}
     </a>
@@ -153,6 +154,33 @@
         </span>
       </button>
     </div>
+    {% if media_count > 1 %}
+      <div class="media-slider-dots__container">
+        <div class="media-slider-prev">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1.31358" y="1.18062" width="38.0919" height="38.0919" rx="19.0459" stroke="#322D2D" stroke-width="0.810465"/>
+            <path d="M26.8436 19.4164H16.9802L21.5107 14.8859L20.3598 13.7432L13.8761 20.2269L20.3598 26.7106L21.5026 25.5678L16.9802 21.0373H26.8436V19.4164Z" fill="#322D2D"/>
+          </svg>
+        </div>
+
+        <div class="media-slider-dots" data-media-count="{{ media_count }}">
+          {% for media in (1..media_count) %}
+            <button
+              class="media-slider-dot{% if forloop.first %} is-active{% endif %}"
+              aria-label="{{ slide | t: slide_number: forloop.index }}"
+              data-slide-index="{{ forloop.index0 }}"
+            ></button>
+          {% endfor %}
+        </div>
+
+        <div class="media-slider-next">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="-0.405232" y="0.405232" width="38.0919" height="38.0919" rx="19.0459" transform="matrix(-1 0 0 1 38.3091 0.775391)" stroke="#322D2D" stroke-width="0.810465"/>
+            <path d="M13.1883 19.4164H23.0516L18.5211 14.8859L19.672 13.7432L26.1557 20.2269L19.672 26.7106L18.5292 25.5678L23.0516 21.0373H13.1883V19.4164Z" fill="#322D2D"/>
+          </svg>
+        </div>
+      </div>
+    {% endif %}
   </slider-component>
   {%- if first_3d_model -%}
     <button
