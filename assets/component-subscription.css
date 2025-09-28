@@ -16,6 +16,12 @@
   color: var(--color-foreground);
 }
 
+.subscription-options__main variant-subcriptions {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
 .subscription-container {
   border-radius: 12px;
   padding: 0;
@@ -231,7 +237,7 @@
   font-size: 12px;
   font-weight: 700;
   padding: 1.5px 5px;
-  border-radius: 0 5px 0 5px;
+  border-radius: 5px 0 5px 0;
   position: absolute;
   right: 0;
   text-transform: uppercase;
@@ -389,6 +395,14 @@
 
 .button::after, .button:not([disabled]):hover:after, .shopify-challenge__button:hover:after, .customer button:hover:after, .shopify-payment-button__button--unbranded:hover:after {
   box-shadow: none;
+}
+
+.product-reviews-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* margin-top: 8px; */
+  max-height: 15px;
 }
 
 /* Responsive Design */

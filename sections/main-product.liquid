@@ -1,18 +1,17 @@
-
 {% assign one_subscription_metafield = product.metafields.custom.single_subcription.value %}
 {% assign two_subscription_metafield = product.metafields.custom.double_subcription.value %}
 <product-info
-id="MainProduct-{{ section.id }}"
-class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}"
-data-section="{{ section.id }}"
-data-product-id="{{ product.id }}"
-data-update-url="true"
-data-url="{{ product.url }}"
-{% if section.settings.image_zoom == 'hover' %}
-  data-zoom-on-hover
-{% endif %}
+  id="MainProduct-{{ section.id }}"
+  class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}"
+  data-section="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-update-url="true"
+  data-url="{{ product.url }}"
+  {% if section.settings.image_zoom == 'hover' %}
+    data-zoom-on-hover
+  {% endif %}
 >
-{% render 'pdp-fonts' %}
+  {% render 'pdp-fonts' %}
   {% style %}
     product-info .page-width {
       max-width: unset;
@@ -158,7 +157,6 @@ data-url="{{ product.url }}"
                       {{ form | payment_terms }}
                     {%- endform -%}
                   </div>
-                  
                 {% endif %}
               {%- when 'inventory' -%}
                 <p
@@ -508,7 +506,19 @@ data-url="{{ product.url }}"
                   show_pickup_availability: true
                 -%}
               {%- when 'rating' -%}
-                {%- if product.metafields.reviews.rating.value != blank -%}
+                {%- comment -%} enable theme-check once `product_reviews` is accepted as valid metafield {% endcomment -%}
+                {% if product.metafields.custom.product_reviews.value != blank %}
+                  <div class="product-reviews-container">
+                    {{
+                      product.metafields.custom.product_reviews.value.review_stars.value
+                      | image_url: width: 83, height: 13, crop: 'center'
+                      | image_tag: loading: 'lazy', width: 83, height: 13, alt: 'Product Reviews'
+                    }}
+                    <p class="product-reviews-rating">{{ product.metafields.custom.product_reviews.value.rating_out_of_5.value }}</p>
+                    <p class="product-reviews-count">({{ product.metafields.custom.product_reviews.value.total_reviews.value }}+ reviews)</p>
+                  </div>
+                {% endif %}
+                {% comment %} {%- if product.metafields.reviews.rating.value != blank -%}
                   <div class="rating-wrapper">
                     {% liquid
                       assign rating_decimal = 0
@@ -544,7 +554,7 @@ data-url="{{ product.url }}"
                       </span>
                     </p>
                   </div>
-                {%- endif -%}
+                {%- endif -%} {% endcomment %}
               {%- when 'complementary' -%}
                 <product-recommendations
                   class="complementary-products quick-add-hidden{% if block.settings.make_collapsible_row %} is-accordion{% endif %}{% if block.settings.enable_quick_add %} complementary-products-contains-quick-add{% endif %}"

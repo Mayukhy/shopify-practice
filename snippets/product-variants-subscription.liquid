@@ -42,9 +42,7 @@
 {% comment %} Only render subscription options if both single and double subscription metafields are populated {% endcomment %}
 {% if one_subscription_metafield != blank and two_subscription_metafield != blank %}
   <div class="subscription-options" {{ block.shopify_attributes }}>
-    <div class="subscription-container">
-      <div class="recommended-banner">Recommended</div>
-
+    <div class="subscription-options__main">
       {% comment %}
         Custom element wrapper for subscription functionality
         Handles variant selection, price updates, and media gallery integration
@@ -52,11 +50,12 @@
       <variant-subcriptions>
         {% comment %} === SINGLE SUBSCRIPTION OPTION === {% endcomment %}
         <details
-          class="subscription-option subscription-accordion"
+          class="subscription-option subscription-accordion subscription-container"
           data-subscription="single"
           open
         >
           <summary>
+            <div class="recommended-banner">Recommended</div>
             <div class="subscription-header">
               <label class="subscription-option-label">
                 <input type="radio" name="subscription-type" value="single" class="subscription-radio" checked>
@@ -95,7 +94,7 @@
                         type="radio"
                         id="single-flavor-{{ forloop.index }}"
                         name="single-flavor"
-                        value="{{ product_variant | json }}"
+                        value='{{ product_variant | json }}'
                         {% if forloop.first %}
                           checked
                         {% endif %}
@@ -202,7 +201,7 @@
           - Uses same accordion structure with details/summary tags
         {% endcomment %}
         <!-- Double Subscription Option -->
-        <details class="subscription-option subscription-accordion" data-subscription="double">
+        <details class="subscription-option subscription-accordion subscription-container" data-subscription="double">
           <summary>
             <div class="subscription-header">
               <label class="subscription-option-label">
@@ -237,7 +236,7 @@
                         type="radio"
                         id="double-flavor1-{{ forloop.index }}"
                         name="double-flavor1"
-                        value="{{ product_variant | json }}"
+                        value='{{ product_variant | json }}'
                         {% if forloop.first %}
                           checked
                         {% endif %}
@@ -269,7 +268,7 @@
                         type="radio"
                         id="double-flavor2-{{ forloop.index }}"
                         name="double-flavor2"
-                        value="{{ product_variant | json }}"
+                        value='{{ product_variant | json }}'
                         {% if forloop.first %}
                           checked
                         {% endif %}

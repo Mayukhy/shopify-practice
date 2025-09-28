@@ -1346,10 +1346,17 @@ a.product__text {
     --constrained-min-height: 500px;
   }
 
+  .product__media-item {
+    height: 672px;
+  }
   .product-media-container.media-fit-cover,
   .product-media-container.media-fit-cover .product__modal-opener,
   .product-media-container.media-fit-cover .media {
-    height: 672px;
+    height: 100%;
+  }
+
+  .media>*:not(.zoom):not(.deferred-media__poster-button), .media model-viewer {
+    max-height: 672px;
   }
 
   .product-media-container.media-fit-cover .deferred-media__poster img {
