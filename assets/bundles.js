@@ -196,7 +196,6 @@ class Bundles extends HTMLElement {
           });
           window.bundleProductsData = this.nestedProducts;
         });
-        console.log(this.nestedProducts);
       }
     }
   }
