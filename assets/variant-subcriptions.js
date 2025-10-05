@@ -91,7 +91,6 @@ class VariantSubcriptions extends HTMLElement {
   changeSelectedSubscriptionVariants(event) {
     if (this.selectedSubscriptionType === 'single') {
       if (event.target.name === 'single-flavor') {
-        console.log('single flavor changed');
         // Clear previous selections before adding new one
         this.subscribedvariants = [];
         this.handleSingleSubscriptionChange();
@@ -123,7 +122,6 @@ class VariantSubcriptions extends HTMLElement {
         compareAtPriceArr: null,
       });
     });
-    console.log(this.subscribedvariants);
   }
 
   /**
@@ -152,7 +150,6 @@ class VariantSubcriptions extends HTMLElement {
       priceArr: priceArr,
       compareAtPriceArr: compareAtPriceArr,
     });
-    console.log(this.subscribedvariants);
   }
 
   /**

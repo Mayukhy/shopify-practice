@@ -23,7 +23,6 @@ if (!customElements.get('product-form')) {
         if (this.submitButton.getAttribute('aria-disabled') === 'true') return;
 
         this.handleErrorMessage();
-        console.log("type is", subscriptionType);
         
         this.submitButton.setAttribute('aria-disabled', true);
         this.submitButton.classList.add('loading');
@@ -137,8 +136,6 @@ if (!customElements.get('product-form')) {
           sections_url: sectionsUrl,
         }
         config.body = JSON.stringify(responseBody);
-
-        console.log("config body", config);
         
 
         fetch(`${routes.cart_add_url}`, config)
