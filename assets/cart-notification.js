@@ -37,10 +37,24 @@ class CartNotification extends HTMLElement {
   renderContents(parsedState) {
     this.cartItemKey = parsedState.key;
     this.getSectionsToRender().forEach((section) => {
-      document.getElementById(section.id).innerHTML = this.getSectionInnerHTML(
-        parsedState.sections[section.id],
-        section.selector
-      );
+      const element = document.getElementById(section.id);
+      if (!element) {
+        console.warn(`Cart notification element ${section.id} not found`);
+        return;
+      }
+
+      const sectionHtml = parsedState.sections && parsedState.sections[section.id];
+      if (!sectionHtml) {
+        console.warn(`Cart notification section ${section.id} not found in response`);
+        return;
+      }
+
+      const innerHTML = this.getSectionInnerHTML(sectionHtml, section.selector);
+      if (innerHTML !== null) {
+        element.innerHTML = innerHTML;
+      } else {
+        console.warn(`Could not parse section content for ${section.id}`);
+      }
     });
 
     if (this.header) this.header.reveal();
@@ -63,7 +77,16 @@ class CartNotification extends HTMLElement {
   }
 
   getSectionInnerHTML(html, selector = '.shopify-section') {
-    return new DOMParser().parseFromString(html, 'text/html').querySelector(selector).innerHTML;
+    if (!html) return null;
+
+    try {
+      const parsedDoc = new DOMParser().parseFromString(html, 'text/html');
+      const element = parsedDoc.querySelector(selector);
+      return element ? element.innerHTML : null;
+    } catch (error) {
+      console.error('Error parsing section HTML:', error);
+      return null;
+    }
   }
 
   handleBodyClick(evt) {

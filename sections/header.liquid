@@ -172,6 +172,8 @@
       if section.settings.menu != blank
         if section.settings.menu_type_desktop == 'dropdown'
           render 'header-dropdown-menu'
+        elsif section.settings.menu_type_desktop == 'desktop-drawer'
+          render 'custom-desktop-header-drawer' 
         elsif section.settings.menu_type_desktop != 'drawer'
           render 'header-mega-menu'
         endif
@@ -514,6 +516,10 @@
         {
           "value": "drawer",
           "label": "t:sections.header.settings.menu_type_desktop.options__3.label"
+        },
+        {
+          "value": "desktop-drawer",
+          "label": "Desktop Drawer"
         }
       ],
       "default": "dropdown",

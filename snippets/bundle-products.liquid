@@ -1,0 +1,361 @@
+{% comment %}
+  Renders bundle products selection interface
+
+  Accepts:
+  - product: product object (required) - The main product containing bundle product metafields
+  - input_type: string (optional) - Type of input to render ('radio' or 'checkbox'), defaults to 'radio'
+  - block: section block object (optional) - For accessing block settings like bundle_heading
+
+  Usage:
+  {% render 'bundle-products', product: product, input_type: 'checkbox' %}
+
+  Expects:
+  - product.metafields.custom.bundle_products.value: array of product objects
+  - bundles.js: JavaScript file for handling bundle product interactions
+{% endcomment %}
+
+{% liquid
+  assign bundle_products = product.metafields.custom.bundle_products.value
+%}
+
+{% comment %} Load bundle products JavaScript for interactive functionality {% endcomment %}
+<script src="{{ 'bundles.js' | asset_url }}" defer="defer"></script>
+
+{% comment %} Bundle products styling {% endcomment %}
+{% if bundle_products != blank %}
+  <style>
+    .bundles__accordion {
+      margin-bottom: -1.5rem;
+    }
+    /* Bundle products list container */
+    .bundle-products-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin: 8px 0 20px 0;
+    }
+
+    .bundle-products__heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 1.7rem;
+      color: #111827;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .bundle-products__heading .svg-wrapper {
+      display: inline-flex;
+      width: 14px;
+      height: 14px;
+      transition: transform 0.3s ease;
+    }
+
+    .rotate-180 {
+      transform: rotate(180deg);
+    }
+
+    /* Caret icon styling for accordion */
+    summary svg {
+      transition: transform 0.3s ease;
+    }
+
+    /* Individual bundle product card */
+    .bundle-product {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 1px solid #eee;
+      padding: 16px;
+      border-radius: 8px;
+      background: #fff;
+      transition: all 0.2s ease;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Hover state for bundle product cards */
+    .bundle-product:hover {
+      border-color: #ccc;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Selected state for manual class assignment */
+    .bundle-product.selected {
+      border-color: #3b82f6;
+      background-color: #f8faff;
+    }
+
+    /* Selected state using :has() selector for modern browsers */
+    .bundle-product:has(.bundle-product__radio:checked) {
+      border-color: #3b82f6;
+      background-color: #f8faff;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Active/pressed state for better user feedback */
+    .bundle-product:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Bundle product image styling */
+    .bundle-product__image img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+
+    /* Bundle product information container */
+    .bundle-product__info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    /* Label wrapper for product title and input */
+    .bundle-product__label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      width: 100%;
+      position: relative;
+    }
+
+    /* Checkbox input styling - positioned in top-right corner */
+    .bundle-product__radio[type='checkbox'] {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      margin: 0;
+      width: 24px;
+      height: 24px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      border: 2px solid #d1d5db;
+      background-color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 6px;
+      flex-shrink: 0;
+      z-index: 2;
+    }
+
+    /* Checkbox checked state */
+    .bundle-product__radio[type='checkbox']:checked {
+      border-color: #3b82f6;
+      background-color: #3b82f6;
+    }
+
+    /* Checkbox checkmark styling */
+    .bundle-product__radio[type='checkbox']:checked::after {
+      content: '';
+      width: 5px;
+      height: 10px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      position: absolute;
+      top: 4px;
+      left: 7px;
+      transform: rotate(45deg);
+    }
+
+    /* Radio button styling - positioned on the left within label */
+    .bundle-product__radio[type='radio'] {
+      margin-right: 12px;
+      width: 18px;
+      height: 18px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      border: 2px solid #d1d5db;
+      background-color: #fff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      flex-shrink: 0;
+      border-radius: 50%;
+    }
+
+    /* Radio button checked state */
+    .bundle-product__radio[type='radio']:checked {
+      border-color: #3b82f6;
+      background-color: #3b82f6;
+    }
+
+    /* Radio button inner dot styling */
+    .bundle-product__radio[type='radio']:checked::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* General hover states for all input types */
+    .bundle-product__radio:hover {
+      border-color: #9ca3af;
+    }
+
+    /* Hover state for checked inputs */
+    .bundle-product__radio:checked:hover {
+      border-color: #2563eb;
+      background-color: #2563eb;
+    }
+
+    /* Enhanced checkbox hover effects */
+    .bundle-product__radio[type='checkbox']:hover {
+      border-color: #9ca3af;
+    }
+
+    /* Enhanced checkbox checked hover state */
+    .bundle-product__radio[type='checkbox']:checked:hover {
+      border-color: #2563eb;
+      background-color: #2563eb;
+    }
+
+    /* Card-level styling for checkbox interactions */
+    /* Card-level styling for checkbox interactions */
+    .bundle-product:has(.bundle-product__radio[type='checkbox']) {
+      cursor: pointer;
+    }
+
+    /* General card selection state for any input type */
+    .bundle-product:has(input:checked) {
+      border-color: #3b82f6;
+      background-color: #f8faff;
+    }
+
+    /* Enhanced visual feedback for checked checkboxes */
+    .bundle-product:has(.bundle-product__radio[type='checkbox']:checked) {
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    /* Accessibility: Focus states for keyboard navigation */
+    /* Accessibility: Focus states for keyboard navigation */
+    .bundle-product__radio:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Disabled state styling */
+    .bundle-product__radio:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Bundle product title styling */
+    .bundle-product__title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #222;
+      margin: 0;
+    }
+
+    /* Bundle product price styling */
+    .bundle-product__price {
+      color: #1a1a1a;
+      font-size: 1rem;
+      font-weight: 500;
+      margin: 0;
+    }
+  </style>
+{% endif %}
+
+{% if bundle_products != blank %}
+  {% comment %} Set input type - can be 'radio' for single selection or 'checkbox' for multiple selection {% endcomment %}
+  {% assign input_type = block.settings.product_list_input_type %}
+  <details
+    class="bundles__accordion"
+    id="Details-{{ block.id }}-{{ section.id }}"
+    {% if section.settings.open_first_collapsible_row and forloop.first %}
+      open
+    {% endif %}
+  >
+    <summary id="Summary-{{ block.id }}-{{ section.id }}">
+      <h3 class="accordion__title inline-richtext h4">
+        {{ block.settings.bundle_heading }}
+      </h3>
+      {{- 'icon-caret.svg' | inline_asset_content -}}
+    </summary>
+    {% comment %} Bundle products custom element wrapper {% endcomment %}
+    <bundle-products
+      data-input-type="{{ input_type }}"
+      class="bundle-products-list"
+      id="CollapsibleAccordion-{{ block.id }}-{{ section.id }}"
+      role="region"
+      aria-labelledby="Summary-{{ block.id }}-{{ section.id }}"
+    >
+      {% comment %} Loop through bundle products from metafields {% endcomment %}
+      {% for item in bundle_products %}
+        {% assign bundle_product = item %}
+        {% if bundle_product %}
+          {% comment %} Individual bundle product card {% endcomment %}
+          <div class="bundle-product">
+            {% comment %} Product image section {% endcomment %}
+            <div class="bundle-product__image">
+              {% if bundle_product.featured_image %}
+                <img
+                  src="{{ bundle_product.featured_image | image_url: width: 150 }}"
+                  alt="{{ bundle_product.title | escape }}"
+                  loading="lazy"
+                  width="80"
+                  height="80"
+                >
+              {% else %}
+                {% comment %} Fallback when no product image is available {% endcomment %}
+                <div style="width: 80px; height: 80px; background: #f0f0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #999;">
+                  No Image
+                </div>
+              {% endif %}
+            </div>
+
+            {% comment %} Product information section {% endcomment %}
+            <div class="bundle-product__info">
+              {% if input_type == 'checkbox' %}
+                {% comment %} Checkbox layout: label without input, input positioned separately {% endcomment %}
+                <label
+                  class="bundle-product__label"
+                  for="bundle_{{ bundle_product.selected_or_first_available_variant.id }}"
+                >
+                  <h3 class="bundle-product__title">{{ bundle_product.title }}</h3>
+                  <input
+                    type="checkbox"
+                    id="bundle_{{ bundle_product.selected_or_first_available_variant.id }}"
+                    name="bundle_product"
+                    value="{{ bundle_product.selected_or_first_available_variant.id }}"
+                    class="bundle-product__radio"
+                  >
+                </label>
+                <p class="bundle-product__price">{{ bundle_product.price | money }}</p>
+              {% else %}
+                {% comment %} Radio button layout: input within label on the left {% endcomment %}
+                <label class="bundle-product__label">
+                  <h3 class="bundle-product__title">{{ bundle_product.title }}</h3>
+                  <input
+                    type="{{ input_type }}"
+                    name="bundle_product"
+                    value="{{ bundle_product.selected_or_first_available_variant.id }}"
+                    class="bundle-product__radio"
+                  >
+                </label>
+                <p class="bundle-product__price">{{ bundle_product.price | money }}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </bundle-products>
+  </details>
+{% endif %}

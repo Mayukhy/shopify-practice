@@ -245,6 +245,7 @@ if (!customElements.get('product-info')) {
             },
           });
           setTimeout(() => {
+            document.dispatchEvent(new Event('change:mainProductVariant', { bubbles: true }));
             this.customVariantContainer = this.querySelector('.custom-product-variant-picker__wrapper');
             if (this.customVariantContainer) {
               this.initializeCustomVariant();
