@@ -363,6 +363,10 @@
         recipientFormCollapsed: `{{ 'recipient.form.collapsed' | t }}`,
         countrySelectorSearchCount: `{{ 'localization.country_results_count' | t: count: '[count]' }}`,
       };
+      window.productTobeUpselled = {
+        isTrue: {{ settings.enable_upsell | json }},
+        product: {% if settings.upselled_product != blank %}{{ all_products[settings.upselled_product] | json }}{% else %}null{% endif %},
+      }
     </script>
 
     {%- if settings.predictive_search_enabled -%}

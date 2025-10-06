@@ -1,0 +1,357 @@
+<style>
+  custom-modal-opener button.loading {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+  }
+
+  .select-dropdown__variant {
+    border: 1px solid #222;
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    background-color: white;
+    border-radius: 4px;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .select-dropdown__variant .select-dropdown__variant-label {
+    padding: 10px 10px;
+    flex-grow: 1;
+  }
+  .select-dropdown__variant-icon {
+    position: relative;
+    padding-right: 10px;
+  }
+  .select-dropdown__variant-icon::before {
+    content: '';
+    border-right: 1px solid #222;
+    margin-right: 20px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 50px;
+    width: 1px;
+    margin-top: -8px;
+  }
+  .select-dropdown__variant-options {
+    display: none;
+    position: absolute;
+    flex-direction: column;
+    top: 50px;
+    left: 0;
+    background: #fff;
+    border: 1px solid #222;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    width: 100%;
+    min-width: 200px;
+  }
+
+  .select-dropdown__variant-options.is-open {
+    display: flex;
+  }
+
+  .select-dropdown__variant-options .variant-option {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin: 0 !important;
+    width: 100%;
+  }
+  .select-dropdown__variant-options .variant-option:hover {
+    background-color: #0e0101;
+    color: #fff;
+  }
+  .select-dropdown__variant-options .variant-option input[type='radio'] {
+    opacity: 0;
+    position: absolute;
+  }
+  .select-dropdown__variant-options .variant-option label {
+    display: block;
+    width: 100%;
+    cursor: pointer;
+  }
+  .select-dropdown__variant-options .variant-option input[type='radio'] + label{
+    padding: 8px 12px;
+  }
+  .select-dropdown__variant-options .variant-option input[type='radio']:checked + label {
+    font-weight: bold;
+    color: #fff;
+    background-color: #0e0101;
+  }
+
+  .custom-opener-btn {
+  position: relative;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: bold;
+  color: rgb(12, 0, 0);
+  background: linear-gradient(to right, black 50%, yellow 50%);
+  background-size: 200% 100%;
+  background-position: right bottom;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  width: 100%;
+}
+
+/* Hover effect */
+.custom-opener-btn:hover {
+  background-position: left bottom;
+  color: rgb(244, 234, 234); /* text turns black when yellow background comes in */
+}
+</style>
+
+<div
+  class="custom-card-product"
+  style="border:1px solid #eee; border-radius:8px; padding:1rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.04);"
+>
+  <div class=" card card--standard">
+    <div class="card__inner">
+      <a href="{{ card_product.url }}" style="display:block; margin-bottom:0.75rem;">
+        {%- if card_product.featured_media -%}
+          <img
+            src="{{ card_product.featured_media | image_url: width: 400 }}"
+            alt="{{ card_product.featured_media.alt | escape }}"
+            style="width:100%; height:auto; border-radius:6px; margin:0 auto; display:block;"
+            loading="lazy"
+            width="{{ card_product.featured_media.width }}"
+            height="{{ card_product.featured_media.height }}"
+          >
+        {%- endif -%}
+      </a>
+      <custom-quick-add-modal
+        data-variants='{{ card_product.variants | json }}'
+        id="quick-add-modal-{{ card_product.id }}"
+        class="custom-quick-add-modal__main"
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          class="custom-quick-add-modal__content"
+          tabindex="-1"
+        >
+          <button
+            type="button"
+            class="custom-quick-add-modal__close"
+            style="position:absolute; width:2rem; height:2rem; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer;"
+          >
+            {{- 'icon-close.svg' | inline_asset_content -}}
+          </button>
+          <div class="custom-quick-add-modal__content-info">
+            <div style="display: flex; flex-direction: column; margin-bottom: 1.5rem;">
+              <!-- Product Image -->
+              <div class="product-image" style="margin-bottom: 1.5rem; width: 100%;">
+                {%- if card_product.featured_media -%}
+                  <img
+                    src="{{ card_product.featured_media | image_url: width: 400 }}"
+                    alt="{{ card_product.featured_media.alt | escape }}"
+                    style="width: 100%; max-width: 300px; height: auto; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 0 auto; display: block;"
+                    loading="lazy"
+                    width="{{ card_product.featured_media.width }}"
+                    height="{{ card_product.featured_media.height }}"
+                  >
+                {%- else -%}
+                  <div style="background: #f4f4f4; width: 100%; max-width: 300px; aspect-ratio: 1/1; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <span style="color: #999;">No image</span>
+                  </div>
+                {%- endif -%}
+              </div>
+
+              <!-- Product Info -->
+              <div class="product-info" style="width: 100%; text-align: center;">
+                <h2 style="margin-top: 0; margin-bottom: 0.5rem;">{{ card_product.title }}</h2>
+                <p style="color: #555; margin-bottom: 1rem;">
+                  {{ card_product.description | strip_html | truncatewords: 30 }}
+                </p>
+                <p style="font-weight: 600; font-size: 1.2rem; margin-bottom: 1rem;">
+                  {{ card_product.price | money }}
+                </p>
+              </div>
+            </div>
+
+            {% if card_product.has_only_default_variant == false %}
+              <div class="product-variants" style="margin-top: 1.5rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Available Options</h3>
+
+                {%- for option in card_product.options_with_values -%}
+                  <div class="product-variant-option" style="margin-bottom: 1rem;">
+                    <label
+                      for="Option-{{ card_product.id }}-{{ forloop.index0 }}"
+                      style="display: block; margin-bottom: 0.5rem; font-weight: 500;"
+                    >
+                      {{ option.name }}:
+                    </label>
+                    {% if option.name != 'Size' %}
+                      <div class="variant-selects" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        {%- for value in option.values -%}
+                          <div class="variant-option" style="margin-bottom: 0.25rem;">
+                            <input
+                              type="radio"
+                              id="Option-{{ card_product.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
+                              name="option-{{ card_product.id }}-{{ option.name | handleize }}"
+                              value="{{ value | escape }}"
+                              {% if forloop.first %}
+                                checked
+                              {% endif %}
+                              style="margin-right: 0.25rem;"
+                            >
+                            <label for="Option-{{ card_product.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}">
+                              {{ value }}
+                            </label>
+                          </div>
+                        {%- endfor -%}
+                      </div>
+                    {% else %}
+                        <div class="select-dropdown__variant">
+                          <span class="select-dropdown__variant-label">Select your variant</span>
+                          <span class="select-dropdown__variant-icon">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              class="lucide lucide-chevron-down-icon lucide-chevron-down"
+                            >
+                              <path d="m6 9 6 6 6-6"/>
+                            </svg>
+                          </span>
+                          <div class="select-dropdown__variant-options">
+                            {%- for value in option.values -%}
+                              <div class="variant-option" style="margin-bottom: 0.25rem;">
+                                <input
+                                  type="radio"
+                                  id="Option-{{ card_product.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}"
+                                  name="option-{{ card_product.id }}-{{ option.name | handleize }}"
+                                  value="{{ value | escape }}"
+                                  style="margin-right: 0.25rem;"
+                                >
+                                <label for="Option-{{ card_product.id }}-{{ forloop.parentloop.index0 }}-{{ forloop.index0 }}">
+                                  {{ value }}
+                                </label>
+                              </div>
+                            {%- endfor -%}
+                          </div>
+                        </div>
+                    {% endif %}
+                  </div>
+                {%- endfor -%}
+              </div>
+            {% endif %}
+            <product-form
+              class="product-form"
+              data-hide-errors="{{ gift_card_recipient_feature_active }}"
+              data-section-id="{{ section.id }}"
+            >
+              <div class="product-form__error-message-wrapper" role="alert" hidden>
+                <span class="svg-wrapper">
+                  {{- 'icon-error.svg' | inline_asset_content -}}
+                </span>
+                <span class="product-form__error-message"></span>
+              </div>
+
+              {%- form 'product',
+                card_product,
+                id: product_form_id,
+                class: 'form',
+                novalidate: 'novalidate',
+                data-type: 'add-to-cart-form'
+              -%}
+                <input
+                  type="hidden"
+                  name="id"
+                  value="{{ card_product.selected_or_first_available_variant.id }}"
+                  {% if card_product.selected_or_first_available_variant.available == false
+                    or quantity_rule_soldout
+                    or card_product.selected_or_first_available_variant == null
+                  %}
+                    disabled
+                  {% endif %}
+                  class="product-variant-id"
+                >
+
+                {%- if gift_card_recipient_feature_active -%}
+                  {%- render 'gift-card-recipient-form', product: card_product, form: form, section: section -%}
+                {%- endif -%}
+
+                <div class="product-form__buttons">
+                  {%- liquid
+                    assign check_against_inventory = true
+                    if card_product.selected_or_first_available_variant.inventory_management != 'shopify' or card_product.selected_or_first_available_variant.inventory_policy == 'continue'
+                      assign check_against_inventory = false
+                    endif
+                    if card_product.selected_or_first_available_variant.quantity_rule.min > card_product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+                      assign quantity_rule_soldout = true
+                    endif
+                  -%}
+                  <button
+                    id="ProductSubmitButton-{{ section_id }}"
+                    type="submit"
+                    name="add"
+                    class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+                    {% if card_product.selected_or_first_available_variant.available == false
+                      or quantity_rule_soldout
+                      or card_product.selected_or_first_available_variant == null
+                    %}
+                      disabled
+                    {% endif %}
+                  >
+                    <span>
+                      {%- if card_product.selected_or_first_available_variant == null -%}
+                        {{ 'products.product.unavailable' | t }}
+                      {%- elsif card_product.selected_or_first_available_variant.available == false
+                        or quantity_rule_soldout
+                      -%}
+                        {{ 'products.product.sold_out' | t }}
+                      {%- else -%}
+                        {{ 'products.product.add_to_cart' | t }}
+                      {%- endif -%}
+                    </span>
+                    {%- render 'loading-spinner' -%}
+                  </button>
+                  {%- if show_dynamic_checkout -%}
+                    {{ form | payment_button }}
+                  {%- endif -%}
+                </div>
+              {%- endform -%}
+            </product-form>
+          </div>
+        </div>
+      </custom-quick-add-modal>
+    </div>
+    <div class="card__content">
+      <h3 style="font-size:1.1rem; margin:0 0 0.5rem 0;">
+        <a href="{{ card_product.url }}" style="color:#222; text-decoration:none;">{{ card_product.title | escape }}</a>
+      </h3>
+      <div style="margin-bottom:0.75rem;">
+        {% render 'price', product: card_product %}
+      </div>
+    </div>
+  </div>
+  {% assign product_form_id = 'quick-add-' | append: section_id | append: card_product.id %}
+  <div class="custom-quick-add no-js-hidden">
+    <custom-modal-opener>
+      <button
+        id="QuickAdd-button-{{ card_product.id }}"
+        type="button"
+        class="custom-opener-btn"
+        aria-haspopup="dialog"
+        aria-labelledby="{{ product_form_id }}-submit title-{{ section_id }}-{{ card_product.id }}"
+        data-product-url="{{ card_product.url }}"
+      >
+        {{ 'products.product.choose_options' | t }}
+        <span class="loading__spinner hidden" style="margin-left:0.5rem; vertical-align:middle;">
+          {%- render 'loading-spinner' -%}
+        </span>
+      </button>
+    </custom-modal-opener>
+  </div>
+</div>

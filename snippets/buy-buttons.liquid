@@ -10,6 +10,41 @@
   Usage:
   {% render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: true %}
 {% endcomment %}
+
+{{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+
+<style>
+  /* Message accordion styling */
+  .product-form .accordion {
+    margin-bottom: 1.5rem;
+  }
+
+  .product-form .accordion__content {
+    padding: 1rem 0;
+  }
+
+  .product-form__message {
+    width: 100%;
+    min-height: 80px;
+    padding: 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+  }
+
+  .product-form__message:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  /* Caret icon styling for accordion */
+  .accordion summary svg {
+    transition: transform 0.3s ease;
+  }
+</style>
 <div {{ block.shopify_attributes }}>
   {%- if product != blank -%}
     {%- liquid
@@ -43,6 +78,28 @@
         novalidate: 'novalidate',
         data-type: 'add-to-cart-form'
       -%}
+        <div class="accordion">
+          <details id="Details-message-{{ section.id }}">
+            <summary id="Summary-message-{{ section.id }}">
+              <h3 class="accordion__title inline-richtext h4">Add Message</h3>
+              {{- 'icon-caret.svg' | inline_asset_content -}}
+            </summary>
+            <div
+              class="accordion__content"
+              id="CollapsibleAccordion-message-{{ section.id }}"
+              role="region"
+              aria-labelledby="Summary-message-{{ section.id }}"
+            >
+              <textarea
+                class="product-form__message"
+                id="message-{{ section.id }}"
+                name="message"
+                placeholder="Enter your custom message here..."
+              ></textarea>
+            </div>
+          </details>
+        </div>
+
         <input
           type="hidden"
           name="id"
@@ -55,7 +112,6 @@
           {% endif %}
           class="product-variant-id"
         >
-
         {%- if gift_card_recipient_feature_active -%}
           {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
         {%- endif -%}
@@ -91,6 +147,14 @@
                 {{ 'products.product.add_to_cart' | t }}
               {%- endif -%}
             </span>
+            <div id="btn-price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
+              {%- render 'price',
+                product: product,
+                use_variant: true,
+                show_badges: true,
+                price_class: 'price--large'
+              -%}
+            </div>
             {%- render 'loading-spinner' -%}
           </button>
           {%- if show_dynamic_checkout -%}

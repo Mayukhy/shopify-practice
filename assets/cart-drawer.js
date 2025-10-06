@@ -42,12 +42,17 @@ class CartDrawer extends HTMLElement {
           : document.getElementById('CartDrawer');
         const focusElement = this.querySelector('.drawer__inner') || this.querySelector('.drawer__close');
         trapFocus(containerToTrapFocusOn, focusElement);
+
+        //modal close event subscription
+        publish(PUB_SUB_EVENTS.quickaddModalClose, {source: 'cart-drawer'});
       },
       { once: true }
     );
 
     document.body.classList.add('overflow-hidden');
   }
+
+  
 
   close() {
     this.classList.remove('active');
