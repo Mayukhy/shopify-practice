@@ -1,4 +1,15 @@
 {
+  "custom_message":{
+    "default": "This is a custom message",
+    "label": "Custom message",
+    "save_text": "Save Message",
+    "cancel_text": "Cancel",
+    "add_text": "Add Message",
+    "edit_text": "Edit Message",
+    "placeholder": "Enter your custom message here",
+    "info": "This message will be displayed to users.",
+    "error": "Please enter a valid message."
+  },
   "general": {
     "password_page": {
       "login_form_heading": "Enter store using password:",
