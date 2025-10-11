@@ -12,7 +12,9 @@
 {% endcomment %}
 
 {{ 'component-accordion.css' | asset_url | stylesheet_tag }}
-
+{% liquid
+  assign gift_wrap_products = product.metafields.custom.gift_wrap.value
+%}
 <style>
   /* Message accordion styling */
   .product-form .accordion {
@@ -63,6 +65,8 @@
       class="product-form"
       data-hide-errors="{{ gift_card_recipient_feature_active }}"
       data-section-id="{{ section.id }}"
+      data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+      data-product-title="{{ product.title }}"
     >
       <div class="product-form__error-message-wrapper" role="alert" hidden>
         <span class="svg-wrapper">
@@ -78,6 +82,8 @@
         novalidate: 'novalidate',
         data-type: 'add-to-cart-form'
       -%}
+
+      {% if gift_wrap_products == blank %}
         <div class="accordion">
           <details id="Details-message-{{ section.id }}">
             <summary id="Summary-message-{{ section.id }}">
@@ -99,6 +105,7 @@
             </div>
           </details>
         </div>
+      {% endif %}
 
         <input
           type="hidden"

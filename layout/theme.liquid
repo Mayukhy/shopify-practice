@@ -367,6 +367,11 @@
         isTrue: {{ settings.enable_upsell | json }},
         product: {% if settings.upselled_product != blank %}{{ all_products[settings.upselled_product] | json }}{% else %}null{% endif %},
       }
+
+      window.currency = {
+        symbol: `{{ localization.country.currency.symbol }}`,
+        code: `{{ localization.country.currency.iso_code }}`,
+      }
     </script>
 
     {%- if settings.predictive_search_enabled -%}

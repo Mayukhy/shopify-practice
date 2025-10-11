@@ -501,6 +501,7 @@
                     </div>
                   </div>
                  {% endif %}
+              {% render 'gift-wrap-items' section: section, product: product %}
               {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,

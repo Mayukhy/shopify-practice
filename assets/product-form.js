@@ -4,7 +4,8 @@ if (!customElements.get('product-form')) {
     class ProductForm extends HTMLElement {
       constructor() {
         super();
-
+        this.productTitle = this.dataset.productTitle;
+        this.variantId = this.dataset.variantId;
         this.form = this.querySelector('form');
         this.variantIdInput.disabled = false;
         this.form.addEventListener('submit', this.onSubmitHandler.bind(this));
@@ -105,10 +106,12 @@ if (!customElements.get('product-form')) {
       }
 
       handleSingleAddToCart(customOption) {
+        const quantityInput = document.querySelector('quantity-input input[name="quantity"]').value;
+        const giftWrapItems = document.querySelector('gift-wrap-items');
+        const checkedInputsLength = giftWrapItems.querySelectorAll('input[name="gift-wrap"]:checked').length;
         const config = fetchConfig('javascript');
         config.headers['X-Requested-With'] = 'XMLHttpRequest';
-        delete config.headers['Content-Type'];
-        
+
         const formData = new FormData(this.form);
         if (this.cart) {
           formData.append(
@@ -118,9 +121,49 @@ if (!customElements.get('product-form')) {
           formData.append('sections_url', window.location.pathname);
           customOption && formData.append('properties[Custom Option]', customOption.value);
           this.messageText && formData.append('properties[Message]', this.messageText.value);
+          // Preserve focus for accessibility
           this.cart.setActiveElement(document.activeElement);
         }
-        config.body = formData;
+        // If gift wrap is selected, add a unique bundle ID to group items
+        if (giftWrapItems && checkedInputsLength >= 1) {
+          config.headers['Content-Type'] = 'application/json';
+          const giftWrapBundleId = new Date().getTime();
+
+          const items = [
+            {
+              id: `${this.variantId}`,
+              quantity: Number(quantityInput),
+            },
+            {
+              id: this.variantIdInput.value,
+              quantity: 1,
+            },
+          ];
+          const updatedItems = items.map((item, idx) => {
+            const newItem = { ...item };
+            if (idx === 0) {
+                newItem.properties = { 
+                  _bundleId: giftWrapBundleId,
+                  _productHandle: this.productTitle,
+                  _variantId: this.variantId
+                };
+            }
+            else {
+              newItem.properties = {
+                _bundleId: giftWrapBundleId,
+              };
+            }
+            return newItem;
+          });
+          config.body = JSON.stringify({
+            items: updatedItems,
+            sections: this.cart.getSectionsToRender().map((section) => section.id),
+            sections_url: window.location.pathname,
+          });
+        } else {
+          delete config.headers['Content-Type'];
+          config.body = formData;
+        }
         fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
           .then((response) => {
