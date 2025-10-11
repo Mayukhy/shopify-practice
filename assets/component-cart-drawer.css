@@ -201,7 +201,7 @@ cart-drawer-items {
 
 .cart-drawer .cart-item {
   display: grid;
-  grid-template: repeat(2, auto) / repeat(4, 1fr);
+  grid-template: repeat(2, auto) / repeat(6, 1fr);
   gap: 1rem;
   margin-bottom: 0;
 }
@@ -270,7 +270,7 @@ cart-drawer-items {
 
 .cart-drawer .cart-item__details {
   width: auto;
-  grid-column: 2 / 4;
+  grid-column: 2 / 6;
 }
 
 .cart-drawer .cart-item__totals {

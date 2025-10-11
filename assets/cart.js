@@ -12,6 +12,101 @@ class CartRemoveButton extends HTMLElement {
 
 customElements.define('cart-remove-button', CartRemoveButton);
 
+/*
+ * CartMessageUpdater is a custom element that allows users to update the message
+ * associated with a cart item.
+ */
+class CartMessageUpdater extends HTMLElement {
+  constructor() {
+    super();
+    this.details = null;
+    this.textarea = null;
+    this.submitButton = null;
+    this.cancelButton = null;
+  }
+
+  connectedCallback() {
+    // Initialize elements
+    this.details = this.querySelector('.cart-message-updater__details');
+    this.textarea = this.querySelector('.cart-message-updater__input');
+    this.submitButton = this.querySelector('.cart-message-updater__submit');
+    this.cancelButton = this.querySelector('.cart-message-updater__cancel');
+
+    // Bind event listeners
+    if (this.submitButton) {
+      this.submitButton.addEventListener('click', this.handleSubmit.bind(this));
+    }
+
+    if (this.cancelButton) {
+      this.cancelButton.addEventListener('click', this.handleCancel.bind(this));
+    }
+
+    if (this.textarea) {
+      this.textarea.addEventListener('input', this.handleInput.bind(this));
+    }
+
+    if (this.details) {
+      this.details.addEventListener('toggle', this.handleToggle.bind(this));
+    }
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    const cartItems = this.closest('cart-items') || this.closest('cart-drawer-items');
+    if (cartItems && this.dataset.updatedMessage !== undefined) {
+      cartItems.updatePropertyValue(
+        this.dataset.index,
+        event,
+        event.target.name,
+        this.dataset.quantityVariantId,
+        this.dataset.updatedMessage
+      );
+      this.closeAccordion();
+    }
+  }
+
+  handleCancel(event) {
+    event.preventDefault();
+    // Reset textarea to original value
+    if (this.textarea && this.dataset.originalMessage) {
+      this.textarea.value = this.dataset.originalMessage;
+      this.dataset.updatedMessage = this.dataset.originalMessage;
+    }
+    this.closeAccordion();
+  }
+
+  handleInput(event) {
+    this.dataset.updatedMessage = event.target.value;
+  }
+
+  handleToggle(event) {
+    if (this.details.open) {
+      // Store original message when opening
+      this.dataset.originalMessage = this.textarea ? this.textarea.value : '';
+
+      // Focus on textarea when accordion opens
+      setTimeout(() => {
+        if (this.textarea) {
+          this.textarea.focus();
+          // Set cursor to end of text
+          this.textarea.setSelectionRange(this.textarea.value.length, this.textarea.value.length);
+        }
+      }, 100);
+    }
+  }
+
+  closeAccordion() {
+    if (this.details) {
+      this.details.open = false;
+    }
+  }
+
+  disconnectedCallback() {
+    // Clean up if needed
+  }
+}
+customElements.define('cart-message-updater', CartMessageUpdater);
+
 class CartItems extends HTMLElement {
   constructor() {
     super();
@@ -59,7 +154,7 @@ class CartItems extends HTMLElement {
     const inputValue = parseInt(event.target.value);
     const index = event.target.dataset.index;
     let message = '';
-
+    if (event.target.closest('.cart-message-updater__input')) return;
     if (inputValue < event.target.dataset.min) {
       message = window.quickOrderListStrings.min_error.replace('[min]', event.target.dataset.min);
     } else if (inputValue > parseInt(event.target.max)) {
@@ -142,6 +237,127 @@ class CartItems extends HTMLElement {
         selector: '.js-contents',
       },
     ];
+  }
+
+  /* Fetches the current cart data from the server.
+  */
+  async getCartData() {
+    const res = await fetch('/cart.js');
+    const cartData = await res.json();
+    return cartData.items;
+  }
+  /*
+  Updates the property value (custom message) of a line item in the cart.
+  Parameters:
+  - line: The line item number to update.
+  - event: The event object that triggered the update.
+  - name: The name attribute of the input element that triggered the event.
+  - variantId: The variant ID of the product being updated.
+  - updatedMessage: The new message to set in the properties of the line item.
+  This method fetches the current cart data, finds the relevant line item,
+  merges existing properties with the new message, and sends an update request
+  to the server. It also handles UI updates and error messages.
+  */
+  async updatePropertyValue(line, event, name, variantId, updatedMessage) {
+    const cartItems = await this.getCartData();
+    const currentCartItem = cartItems.find((item) => item.id === Number(variantId));
+
+    if (!currentCartItem) {
+      console.error('Cart item not found for variant ID:', variantId);
+      return;
+    }
+
+    this.enableLoading(line);
+
+    // Handle properties - merge existing with new message
+    let properties = {};
+    if (currentCartItem.properties && Object.keys(currentCartItem.properties).length > 0) {
+      properties = {
+        ...currentCartItem.properties, // Spread existing properties
+        Message: updatedMessage, // Override only the Message property
+      };
+    } else if (updatedMessage) {
+      properties = {
+        Message: updatedMessage,
+      };
+    }
+
+    // Use the correct body format for updating line item properties
+    const body = JSON.stringify({
+      line: parseInt(line),
+      quantity: currentCartItem.quantity,
+      properties: properties,
+      sections: this.getSectionsToRender().map((section) => section.section),
+      sections_url: window.location.pathname,
+    });
+
+    const eventTarget = event.currentTarget instanceof CartRemoveButton ? 'clear' : 'change';
+
+    try {
+      // Use cart_change_url instead of cart_update_url for line items
+      const response = await fetch(`${routes.cart_change_url}`, { ...fetchConfig(), ...{ body } });
+      const state = await response.text();
+      const parsedState = JSON.parse(state);
+
+      // Rest of your code remains the same...
+      CartPerformance.measure(`${eventTarget}:paint-updated-sections"`, () => {
+        const quantityElement =
+          document.getElementById(`Quantity-${line}`) || document.getElementById(`Drawer-quantity-${line}`);
+        const items = document.querySelectorAll('.cart-item');
+
+        if (parsedState.errors) {
+          if (quantityElement) {
+            quantityElement.value = quantityElement.getAttribute('value');
+          }
+          this.updateLiveRegions(line, parsedState.errors);
+          return;
+        }
+
+        this.classList.toggle('is-empty', parsedState.item_count === 0);
+        const cartDrawerWrapper = document.querySelector('cart-drawer');
+        const cartFooter = document.getElementById('main-cart-footer');
+
+        if (cartFooter) cartFooter.classList.toggle('is-empty', parsedState.item_count === 0);
+        if (cartDrawerWrapper) cartDrawerWrapper.classList.toggle('is-empty', parsedState.item_count === 0);
+
+        this.getSectionsToRender().forEach((section) => {
+          const elementToReplace =
+            document.getElementById(section.id).querySelector(section.selector) || document.getElementById(section.id);
+          if (elementToReplace && parsedState.sections && parsedState.sections[section.section]) {
+            elementToReplace.innerHTML = this.getSectionInnerHTML(
+              parsedState.sections[section.section],
+              section.selector
+            );
+          }
+        });
+
+        this.updateLiveRegions(line, '');
+
+        const lineItem =
+          document.getElementById(`CartItem-${line}`) || document.getElementById(`CartDrawer-Item-${line}`);
+        if (lineItem && lineItem.querySelector(`[name="${name}"]`)) {
+          cartDrawerWrapper
+            ? trapFocus(cartDrawerWrapper, lineItem.querySelector(`[name="${name}"]`))
+            : lineItem.querySelector(`[name="${name}"]`).focus();
+        } else if (parsedState.item_count === 0 && cartDrawerWrapper) {
+          trapFocus(cartDrawerWrapper.querySelector('.drawer__inner-empty'), cartDrawerWrapper.querySelector('a'));
+        } else if (document.querySelector('.cart-item') && cartDrawerWrapper) {
+          trapFocus(cartDrawerWrapper, document.querySelector('.cart-item__name'));
+        }
+      });
+
+      CartPerformance.measureFromEvent(`${eventTarget}:user-action`, event);
+      publish(PUB_SUB_EVENTS.cartUpdate, { source: 'cart-items', cartData: parsedState, variantId: variantId });
+    } catch (error) {
+      console.error('Error updating cart:', error);
+      this.querySelectorAll('.loading__spinner').forEach((overlay) => overlay.classList.add('hidden'));
+      const errors = document.getElementById('cart-errors') || document.getElementById('CartDrawer-CartErrors');
+      if (errors) {
+        errors.textContent = window.cartStrings.error;
+      }
+    } finally {
+      this.disableLoading(line);
+    }
   }
 
   updateQuantity(line, quantity, event, name, variantId) {
