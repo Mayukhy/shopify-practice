@@ -30,6 +30,8 @@ class GiftWrapItems extends HTMLElement {
     this.mainProductId = this.dataset.mainProductId;
     /** @type {string} Main product price in cents */
     this.mainProductPrice = this.dataset.mainProductPrice;
+    /** @type {string} Bundle discount percentage (if any) */
+    this.bundleDiscount = this.dataset.bundleDiscount; // Default to 5% if not provided
   }
 
   /**
@@ -43,7 +45,7 @@ class GiftWrapItems extends HTMLElement {
     this.addEventListener('change', this.changeGiftWrap.bind(this));
 
     // Initialize discount pricing display
-    this && this.initDiscountedPrice();
+    this && this.bundleDiscount && this.initDiscountedPrice();
 
     // Reset checkboxes after DOM is ready
     this &&
@@ -102,7 +104,7 @@ class GiftWrapItems extends HTMLElement {
     }
 
     // Refresh discount pricing
-    this.initDiscountedPrice();
+    this.bundleDiscount && this.initDiscountedPrice();
   }
 
   /**
@@ -133,12 +135,12 @@ class GiftWrapItems extends HTMLElement {
       this.variantIdInput.value = this.mainProductId;
 
       const totalPrice = Number(this.mainProductPrice) / 100;
-      const discountedPrice = totalPrice * 0.95; // 5% off
+      const discountedPrice = totalPrice * (1 - (this.bundleDiscount / 100)); // Apply bundle discount
       const originalFormattedPrice = this.formatPrice(Number(this.mainProductPrice) / 100);
       const formattedDiscountedPrice = this.formatPrice(discountedPrice);
 
       // Update main price display with strikethrough and discount
-      priceItem.innerHTML = `<span class="price-original" style="text-decoration: line-through; color: #999; margin-right: 8px;">$${originalFormattedPrice} ${window.currency.code}</span><span class="price-discounted" style="color: #e53e3e; font-weight: bold;">$${formattedDiscountedPrice} ${window.currency.code}</span> <span class="discount-badge" style="background: #e53e3e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 4px;">5% OFF</span>`;
+      priceItem.innerHTML = `<span class="price-original" style="text-decoration: line-through; color: #999; margin-right: 8px;">$${originalFormattedPrice} ${window.currency.code}</span><span class="price-discounted" style="color: #e53e3e; font-weight: bold;">$${formattedDiscountedPrice} ${window.currency.code}</span> <span class="discount-badge" style="background: #e53e3e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 4px;">${this.bundleDiscount}% OFF</span>`;
 
       // Update button price
       btnPrice.innerHTML = `<span>$${formattedDiscountedPrice} ${window.currency.code}</span>`;
@@ -162,16 +164,16 @@ class GiftWrapItems extends HTMLElement {
     const totalPrice = Number(this.mainProductPrice) / 100 + Number(selectedPrice);
 
     /**
-     * @todo Discounts will come from product metafields in future
-     * Apply 5% discount when gift wrap is selected (frontend display only)
+     * Discounts are coming from product metafields
+     * Apply {{this.bundleDiscount}}% discount when gift wrap is selected (frontend display only)
      * Real discount will be applied by cart transform custom app
      */
-    const discountedPrice = totalPrice * 0.95; // 5% off
+    const discountedPrice = totalPrice * (1 - (this.bundleDiscount / 100)); // Apply bundle discount
     const formattedPrice = this.formatPrice(discountedPrice);
     const originalFormattedPrice = this.formatPrice(totalPrice);
 
     // Update price display with original and discounted prices
-    priceItem.innerHTML = `<span class="price-original" style="text-decoration: line-through; color: #999; margin-right: 8px;">$${originalFormattedPrice} ${window.currency.code}</span><span class="price-discounted" style="color: #e53e3e; font-weight: bold;">$${formattedPrice} ${window.currency.code}</span> <span class="discount-badge" style="background: #e53e3e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 4px;">5% OFF</span>`;
+    priceItem.innerHTML = `<span class="price-original" style="text-decoration: line-through; color: #999; margin-right: 8px;">$${originalFormattedPrice} ${window.currency.code}</span><span class="price-discounted" style="color: #e53e3e; font-weight: bold;">$${formattedPrice} ${window.currency.code}</span> <span class="discount-badge" style="background: #e53e3e; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 4px;">${this.bundleDiscount}% OFF</span>`;
 
     // Update button price with discount styling
     btnPrice.innerHTML = `<span style="color: #e53e3e;">$${formattedPrice} ${window.currency.code}</span>`;

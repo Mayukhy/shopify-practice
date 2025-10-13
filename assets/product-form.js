@@ -108,7 +108,7 @@ if (!customElements.get('product-form')) {
       handleSingleAddToCart(customOption) {
         const quantityInput = document.querySelector('quantity-input input[name="quantity"]').value;
         const giftWrapItems = document.querySelector('gift-wrap-items');
-        const checkedInputsLength = giftWrapItems.querySelectorAll('input[name="gift-wrap"]:checked').length;
+        const checkedInputsLength = giftWrapItems?.querySelectorAll('input[name="gift-wrap"]:checked').length;
         const config = fetchConfig('javascript');
         config.headers['X-Requested-With'] = 'XMLHttpRequest';
 
@@ -128,7 +128,7 @@ if (!customElements.get('product-form')) {
         if (giftWrapItems && checkedInputsLength >= 1) {
           config.headers['Content-Type'] = 'application/json';
           const giftWrapBundleId = new Date().getTime();
-
+          const bundleDiscount = giftWrapItems.dataset.bundleDiscount;
           const items = [
             {
               id: `${this.variantId}`,
@@ -145,7 +145,8 @@ if (!customElements.get('product-form')) {
                 newItem.properties = { 
                   _bundleId: giftWrapBundleId,
                   _productHandle: this.productTitle,
-                  _variantId: this.variantId
+                  _variantId: this.variantId,
+                  ...(bundleDiscount && {_bundleDiscount: bundleDiscount}),
                 };
             }
             else {
