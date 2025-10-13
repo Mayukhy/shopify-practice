@@ -166,7 +166,7 @@ class GiftWrapItems extends HTMLElement {
     /**
      * Discounts are coming from product metafields
      * Apply {{this.bundleDiscount}}% discount when gift wrap is selected (frontend display only)
-     * Real discount will be applied by cart transform custom app
+     * Real discount will be applied by shopify discounts or discount app
      */
     const discountedPrice = totalPrice * (1 - (this.bundleDiscount / 100)); // Apply bundle discount
     const formattedPrice = this.formatPrice(discountedPrice);
