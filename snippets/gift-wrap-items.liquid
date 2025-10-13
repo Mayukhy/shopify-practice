@@ -1,0 +1,116 @@
+{% comment %}
+  Gift Wrap Items Component
+
+  This component displays gift wrapping options for products.
+  It reads gift wrap products from product metafields and displays them
+  as selectable options with images, prices, and descriptions.
+
+  Features:
+  - Product images with fallback placeholders
+  - Price display with sale pricing support
+  - 5% discount applied when gift wrap is selected
+  - Checkbox selection for multiple gift wrap options
+  - Responsive grid layout
+
+  Dependencies:
+  - component-gift-wrap-items.css
+  - gift-wrap-items.js
+
+  Metafields required:
+  - product.metafields.custom.gift_wrap (product_reference list)
+{% endcomment %}
+
+{{ 'component-gift-wrap-items.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'gift-wrap-items.js' | asset_url }}" defer></script>
+
+{% liquid
+  # Get gift wrap products from product metafields
+  assign gift_wrap_products = product.metafields.custom.gift_wrap.value
+  assign bundle_discount = product.metafields.custom.bundle_discount.value
+%}
+
+{% comment %} Only render if gift wrap products are available {% endcomment %}
+{%- if gift_wrap_products != blank -%}
+  <gift-wrap-items
+    data-main-product-id="{{ product.selected_or_first_available_variant.id }}"
+    data-main-product-price="{{ product.price }}"
+    {% if bundle_discount != blank %}
+      data-bundle-discount="{{ bundle_discount }}"
+    {% endif %}
+  >
+    <div class="gift-wrap-items">
+      <h3 class="gift-wrap-title">Choose Gift Wrapping</h3>
+      <div class="gift-wrap-grid">
+        {% comment %} Loop through each gift wrap product {% endcomment %}
+        {% for item in gift_wrap_products %}
+          <label for="gift-wrap-option-{{ forloop.index }}" class="gift-wrap-option">
+            {% comment %}
+              Gift wrap selection input
+              - Uses checkbox to allow multiple selections
+              - Stores price data for JavaScript calculations
+              - Uses variant ID as value for cart operations
+            {% endcomment %}
+            <input
+              data-price="{{ item.selected_or_first_available_variant.price | money_without_currency }}"
+              type="checkbox"
+              id="gift-wrap-option-{{ forloop.index }}"
+              name="gift-wrap"
+              value="{{ item.selected_or_first_available_variant.id }}"
+              class="gift-wrap-input"
+            >
+
+            <div class="gift-wrap-card">
+              {% comment %} Product image with fallback {% endcomment %}
+              <div class="gift-wrap-image">
+                {%- if item.featured_image -%}
+                  <img
+                    src="{{ item.featured_image | image_url: width: 300 }}"
+                    alt="{{ item.featured_image.alt | default: item.title | escape }}"
+                    loading="lazy"
+                    width="80"
+                    height="80"
+                  >
+                {%- else -%}
+                  {% comment %} Fallback when no image is available {% endcomment %}
+                  <div class="gift-wrap-placeholder">
+                    <span class="gift-wrap-placeholder-text">No Image</span>
+                  </div>
+                {%- endif -%}
+              </div>
+
+              {% comment %} Product details section {% endcomment %}
+              <div class="gift-wrap-details">
+                <p class="gift-wrap-name">{{ item.title }}</p>
+
+                {% comment %} Price display with sale pricing support {% endcomment %}
+                <div class="gift-wrap-price">
+                  {%- if item.selected_or_first_available_variant.compare_at_price
+                      > item.selected_or_first_available_variant.price
+                  -%}
+                    {% comment %} Show both compare price and sale price {% endcomment %}
+                    <span class="gift-wrap-price-compare">
+                      {{ item.selected_or_first_available_variant.compare_at_price | money }}
+                    </span>
+                    <span class="gift-wrap-price-current">
+                      {{ item.selected_or_first_available_variant.price | money }}
+                    </span>
+                  {%- else -%}
+                    {% comment %} Show regular price only {% endcomment %}
+                    <span class="gift-wrap-price-current">
+                      {{ item.selected_or_first_available_variant.price | money }}
+                    </span>
+                  {%- endif -%}
+                </div>
+
+                {% comment %} Optional product description {% endcomment %}
+                {%- if item.description != blank -%}
+                  <p class="gift-wrap-description">{{ item.description | truncate: 100 }}</p>
+                {%- endif -%}
+              </div>
+            </div>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+  </gift-wrap-items>
+{%- endif -%}
