@@ -256,6 +256,12 @@ class QuantityInput extends HTMLElement {
       this.input.stepDown();
     }
 
+    const newEvent = new CustomEvent('bundle:quantity-changed', { bubbles: true, detail: { 
+      quantity: Number(this.input.value),
+      variantId: this.input.dataset.quantityVariantId
+    } });
+    this.dispatchEvent(newEvent);
+
     if (previousValue !== this.input.value) this.input.dispatchEvent(this.changeEvent);
 
     if (this.input.dataset.min === previousValue && event.target.name === 'minus') {

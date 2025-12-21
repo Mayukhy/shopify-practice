@@ -57,15 +57,16 @@ if (!customElements.get('product-info')) {
       initializeCustomVariant() {
         const allRadios = this.customVariantContainer.querySelectorAll('input[type="radio"]');
         const url = new URL(window.location.href);
-        
+
         if (url.searchParams.get('custom_option')) {
-          this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent = url.searchParams.get('custom_option');
+          this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent =
+            url.searchParams.get('custom_option');
           allRadios.forEach((input) => {
             input.checked = input.value === url.searchParams.get('custom_option');
           });
-        }
-        else{
-          this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent = allRadios[0].value;
+        } else {
+          this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent =
+            allRadios[0].value;
           allRadios.forEach((input) => {
             input.checked = input.value === allRadios[0].value;
           });
@@ -73,11 +74,12 @@ if (!customElements.get('product-info')) {
       }
 
       handleCustomOption(event) {
-       if (event.target.name.startsWith('custom')) {
-         const selectedValue = event.target.value;
-         this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent = selectedValue;
-         this.addCustomVariantToUrl(event);
-       }
+        if (event.target.name.startsWith('custom')) {
+          const selectedValue = event.target.value;
+          this.customVariantContainer.querySelector('.custom-product-variant-picker__label span').textContent =
+            selectedValue;
+          this.addCustomVariantToUrl(event);
+        }
       }
 
       addCustomVariantToUrl(event) {
@@ -276,7 +278,11 @@ if (!customElements.get('product-info')) {
 
         if (this.dataset.updateUrl === 'false') return;
         if (checkedCustomRadio) {
-          window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}&custom_option=${checkedCustomRadio.value}` : ''}`);
+          window.history.replaceState(
+            {},
+            '',
+            `${url}${variantId ? `?variant=${variantId}&custom_option=${checkedCustomRadio.value}` : ''}`
+          );
         } else {
           window.history.replaceState({}, '', `${url}${variantId ? `?variant=${variantId}` : ''}`);
         }

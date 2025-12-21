@@ -281,6 +281,7 @@
                         type="number"
                         name="quantity"
                         id="Quantity-{{ section.id }}"
+                        data-quantity-variant-id="{{ product.selected_or_first_available_variant.id }}"
                         data-cart-quantity="{{ cart_qty }}"
                         data-min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
                         min="{{ product.selected_or_first_available_variant.quantity_rule.min }}"
@@ -501,6 +502,7 @@
                     </div>
                   </div>
                  {% endif %}
+              {% render 'gift-wrap-items' section: section, product: product %}
               {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,
