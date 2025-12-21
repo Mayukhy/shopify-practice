@@ -32,17 +32,25 @@ class Bundles extends HTMLElement {
    * @returns {void}
    */
   connectedCallback() {
-    this.addCardClickHandlers();
+    // this.addCardClickHandlers();
     setTimeout(() => {
+      this.nestedProducts = [
+        {
+          id: this.mainProductVariantId.value,
+          quantity: Number(this.mainProductQuantity.value),
+        },
+      ];
+      this.handleQuantityInputsVisibility();
       this.initializeBundlesInputs();
     }, 300);
+    this.initializeAccordionToggle();
     document.addEventListener('bundle:added', this.initializeBundlesInputs.bind(this));
+    document.addEventListener('bundle:quantity-changed', this.changeBundleProductQuantity.bind(this));
     document.addEventListener('change:mainProductVariant', this.updateBundleMainProduct.bind(this));
     this.addEventListener('change', this.changeFormWithBundle.bind(this));
-    this.initializeAccordionToggle();
   }
-  
-    /**
+
+  /**
    * Called when the element is disconnected from the DOM
    * Cleans up event listeners and resets component state
    *
@@ -89,7 +97,9 @@ class Bundles extends HTMLElement {
     if (this.nestedProducts.length > 0) {
       this.nestedProducts[0].id = this.mainProductVariantId.value;
     }
-    this.nestedProducts.map((product) => product.parent_id ? product.parent_id = this.mainProductVariantId.value : product);
+    this.nestedProducts.map((product) =>
+      product.parent_id ? (product.parent_id = this.mainProductVariantId.value) : product
+    );
   }
 
   /**
@@ -115,6 +125,7 @@ class Bundles extends HTMLElement {
     this.querySelectorAll('.bundle-product input').forEach((input) => {
       input.checked = false;
     });
+    this.resetBundleQuantityInputs();
   }
 
   /**
@@ -162,6 +173,10 @@ class Bundles extends HTMLElement {
    * @returns {void}
    */
   changeFormWithBundle(event) {
+    if (event.target.classList.contains('quantity__input')) {
+      event.stopPropagation();
+    }
+
     if (event.target.name === 'bundle_product') {
       if (this.inputType === 'radio') {
         /** @type {Array<Object>} Bundle products array for radio selection */
@@ -169,11 +184,11 @@ class Bundles extends HTMLElement {
           // Add your nested product IDs here
           {
             id: this.mainProductVariantId.value,
-            quantity: 1,
+            quantity: Number(this.mainProductQuantity.value),
           },
           {
             id: event.target.value,
-            quantity: 1,
+            quantity: this.fetchCurrentProductQuantity(event.target.value),
             parent_id: this.mainProductVariantId.value,
           },
         ];
@@ -184,23 +199,115 @@ class Bundles extends HTMLElement {
         this.nestedProducts = [
           {
             id: this.mainProductVariantId.value,
-            quantity: 1,
+            quantity: Number(this.mainProductQuantity.value),
           },
         ];
         // Handle checkbox logic if needed
         this.querySelectorAll('.bundle-product__radio[type="checkbox"]:checked').forEach((checkbox) => {
           this.nestedProducts.push({
             id: checkbox.value,
-            quantity: 1,
+            quantity: this.fetchCurrentProductQuantity(checkbox.value),
             parent_id: this.mainProductVariantId.value,
           });
-          window.bundleProductsData = this.nestedProducts;
         });
+        window.bundleProductsData = this.nestedProducts;
       }
     }
+    this.handleQuantityInputsVisibility();
   }
 
-  
+  /**
+   * Handles bundle product quantity changes from custom events
+   * Updates the quantity of products in the nestedProducts array
+   *
+   * @memberof Bundles
+   * @param {CustomEvent} event - The custom event containing quantity change details
+   * @returns {void}
+   */
+  changeBundleProductQuantity(event) {
+    event = event.detail;
+    this.nestedProducts = this.nestedProducts.map((product) => {
+      if (product.id === event.variantId) {
+        return { ...product, quantity: event.quantity };
+      }
+      else if (!product.parent_id && product.id === this.mainProductVariantId.value) {
+        return { ...product, quantity: Number(this.mainProductQuantity.value) };
+      }
+      else {
+        return { ...product };
+      }
+    });
+    window.bundleProductsData = this.nestedProducts;
+  }
+
+  /**
+   * Controls the visibility and enabled state of quantity inputs based on bundle selection
+   * Enables quantity inputs only for selected bundle products
+   *
+   * @memberof Bundles
+   * @returns {void}
+   */
+  handleQuantityInputsVisibility() {
+    const disabledClass = 'bundle-quantity--disabled';
+    const enabledClass = 'bundle-quantity--enabled';
+    this.querySelectorAll('.bundle-quantity').forEach((quantityInput) => {
+      const input = quantityInput.querySelector('input[type="number"].quantity__input');
+      const minusButton = quantityInput.querySelector('button[name="minus"]');
+      const plusButton = quantityInput.querySelector('button[name="plus"]');
+      // Check if this input's variant is in the selected products
+      const isSelected = this.nestedProducts.some((product) => product.id == input.dataset.quantityVariantId);
+
+      input.disabled = !isSelected;
+      minusButton.disabled = !isSelected;
+      plusButton.disabled = !isSelected;
+      if (isSelected) {
+        quantityInput.classList.add(enabledClass);
+        quantityInput.classList.remove(disabledClass);
+        minusButton.classList.remove(disabledClass);
+        plusButton.classList.remove(disabledClass);
+      } else {
+        quantityInput.classList.add(disabledClass);
+        quantityInput.classList.remove(enabledClass);
+        minusButton.classList.add(disabledClass);
+        plusButton.classList.add(disabledClass);
+      }
+    });
+  }
+
+  /**
+   * Fetches the current quantity value for a specific product variant
+   *
+   * @memberof Bundles
+   * @param {string} variantId - The variant ID to fetch quantity for
+   * @returns {number} The current quantity value
+   */
+  fetchCurrentProductQuantity(variantId) {
+    const input = this.querySelector(`input[type="number"]#Quantity-${variantId}`);
+    return Number(input.value);
+  }
+
+  /**
+   * Resets all bundle quantity inputs to their minimum values
+   * Reinitializes the nestedProducts array with only the main product
+   *
+   * @memberof Bundles
+   * @returns {void}
+   */
+  resetBundleQuantityInputs() {
+    this.querySelectorAll('.bundle-quantity').forEach((quantityInput) => {
+      const input = quantityInput.querySelector('input[type="number"].quantity__input');
+      const minQuantity = parseInt(input.dataset.min) || 1;
+      input.value = minQuantity;
+    });
+
+    this.nestedProducts = [
+      {
+        id: this.mainProductVariantId.value,
+        quantity: Number(this.mainProductQuantity.value),
+      },
+    ];
+    this.handleQuantityInputsVisibility();
+  }
 
   /**
    * Gets the main product variant ID from the product form
@@ -211,6 +318,17 @@ class Bundles extends HTMLElement {
   get mainProductVariantId() {
     const form = document.querySelector('product-info product-form form');
     return form.querySelector('[name=id]');
+  }
+
+  /**
+   * Gets the main product quantity input element from the product form
+   *
+   * @memberof Bundles
+   * @returns {HTMLInputElement} The main product quantity input element
+   */
+  get mainProductQuantity() {
+    const quantityIpContainer = document.querySelector('product-info .price-per-item__container quantity-input');
+    return quantityIpContainer.querySelector('.quantity__input[name=quantity]');
   }
 }
 
