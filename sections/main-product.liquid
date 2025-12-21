@@ -110,6 +110,28 @@
                     </h2>
                   </a>
                 </div>
+                <div 
+                  data-variants='{{ product.variants | json }}'
+                  class="custom-variants-container">
+                  {% for option in product.options_with_values %}
+                    {{ option.name }}
+                    {% for value in option.values %}
+                      <input
+                        {% if value.selected %}
+                          checked
+                        {% endif %}
+                        type="radio"
+                        id="option-{{ option.name | handleize }}-{{ value | handleize }}"
+                        data-value="{{ value }}"
+                        data-option-value="{{ value.id }}"
+                        class="custom-option-value"
+                        name="option-radio-{{ option.name | handleize }}"
+                        value="{{ value }}"
+                      >
+                      <label for="option-{{ option.name | handleize }}-{{ value | handleize }}">{{ value }}</label>
+                    {% endfor %}
+                  {% endfor %}
+                </div>
               {%- when 'price' -%}
                 <div id="price-{{ section.id }}" role="status" {{ block.shopify_attributes }}>
                   {%- render 'price',
@@ -484,24 +506,32 @@
                 {% render 'product-variant-picker', product: product, block: block, product_form_id: product_form_id %}
 
                 {% comment %} 4th or extra Custom variant Option (will come form metafield ref of metaObject basically) {% endcomment %}
-                 {% if custom_variants %}
+                {% if custom_variants %}
                   <div class="custom-product-variant-picker__wrapper">
                     <p class="custom-product-variant-picker__label">Material: <span></span></p>
                     <div class="custom-product-variant-picker__options">
                       {% for option in custom_variants %}
                         <label class="custom-option-label" for="custom-option-{{ forloop.index }}">
                           <img
-                          width="50"
-                          height="50"
-                          src="{{ option.material_visuals | img_url: 'small' }}" alt="{{ option.display_name }}">
-                          <input class="custom-option-input" value="{{ option.display_name }}" type="radio" name="custom-option" id="custom-option-{{ forloop.index }}">
+                            width="50"
+                            height="50"
+                            src="{{ option.material_visuals | img_url: 'small' }}"
+                            alt="{{ option.display_name }}"
+                          >
+                          <input
+                            class="custom-option-input"
+                            value="{{ option.display_name }}"
+                            type="radio"
+                            name="custom-option"
+                            id="custom-option-{{ forloop.index }}"
+                          >
                           {{ option.display_name }}
                         </label>
                       {% endfor %}
                     </div>
                   </div>
-                 {% endif %}
-              {% render 'gift-wrap-items' section: section, product: product %}
+                {% endif %}
+                {% render 'gift-wrap-items', section: section, product: product %}
               {%- when 'buy_buttons' -%}
                 {%- render 'buy-buttons',
                   block: block,

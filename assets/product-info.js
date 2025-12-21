@@ -13,14 +13,19 @@ if (!customElements.get('product-info')) {
 
       constructor() {
         super();
+        this.selectedVariant = []
+        this.selectedOptionValues = [];
+        this.currentVariant = null;
+        this.productVariants = JSON.parse(this.querySelector('.custom-variants-container').dataset.variants);
         this.quantityInput = this.querySelector('.quantity__input');
         this.customVariantContainer = this.querySelector('.custom-product-variant-picker__wrapper');
         this.checkedRadio = this.customVariantContainer?.querySelector('input[type="radio"]:checked');
+        this.addEventListener('change', this.selectCurrentVariant.bind(this));
       }
 
       connectedCallback() {
         this.initializeProductSwapUtility();
-
+        this.inisializeVariants()
         this.onVariantChangeUnsubscriber = subscribe(
           PUB_SUB_EVENTS.optionValueSelectionChange,
           this.handleOptionValueChange.bind(this)
@@ -30,6 +35,51 @@ if (!customElements.get('product-info')) {
         this.dispatchEvent(new CustomEvent('product-info:loaded', { bubbles: true }));
         this.initializeCustomVariant();
         this.customVariantContainer?.addEventListener('change', this.handleCustomOption.bind(this));
+        this.addEventListener('product-info:option-change', (event) => {
+          this.querySelector('.custom-variants-container').querySelectorAll("input[name^='option-']").forEach( radio => {
+            event.detail.newOptionIds.forEach( value => {
+              if (radio.dataset.optionValue === value) {
+                radio.checked = true;
+              }
+            })
+          })
+          this.setCurrentVariant();
+          });
+      }
+
+      inisializeVariants(){
+        this.querySelector('.custom-variants-container').querySelectorAll("input[name^='option-']:checked").forEach( radio => {
+          this.selectedVariant.push(radio.value)
+        })
+        this.querySelector('.custom-variants-container').querySelectorAll("input[name^='option-']:checked").forEach( radio => {
+          this.selectedOptionValues.push(radio.dataset.optionValue)
+        })
+        this.currentVariant = this.productVariants.find( v => v.options.every( (opt, index) => opt === this.selectedVariant[index]))
+        console.log("current id", this.currentVariant);
+      }
+
+      selectCurrentVariant(event) {
+        if (!event.target.name.startsWith('option-radio-')) return;
+        this.setCurrentVariant();
+        this.handleOptionValueChange({ data: {
+          event,
+          target: event.target,
+          selectedOptionValues: this.selectedOptionValues,
+        },});
+      }
+
+      setCurrentVariant(){
+        this.selectedVariant = [];
+        this.selectedOptionValues = [];
+
+        this.querySelector('.custom-variants-container').querySelectorAll("input[name^='option-']:checked").forEach( radio => {
+          this.selectedVariant.push(radio.value)
+        })
+        this.querySelector('.custom-variants-container').querySelectorAll("input[name^='option-']:checked").forEach( radio => {
+          this.selectedOptionValues.push(radio.dataset.optionValue)
+        })
+        this.currentVariant = this.productVariants.find( v => v.options.every( (opt, index) => opt === this.selectedVariant[index]))
+        console.log("current id", this.currentVariant);
       }
 
       addPreProcessCallback(callback) {
@@ -55,7 +105,7 @@ if (!customElements.get('product-info')) {
       }
 
       initializeCustomVariant() {
-        const allRadios = this.customVariantContainer.querySelectorAll('input[type="radio"]');
+        const allRadios = this?.customVariantContainer?.querySelectorAll('input[type="radio"]');
         const url = new URL(window.location.href);
         
         if (url.searchParams.get('custom_option')) {
@@ -112,6 +162,10 @@ if (!customElements.get('product-info')) {
             ? this.handleSwapProduct(productUrl, shouldFetchFullPage)
             : this.handleUpdateProductInfo(productUrl),
         });
+        const newData = {
+          newOptionIds:  selectedOptionValues,
+        }
+        this.dispatchEvent(new CustomEvent('product-info:option-change', { detail: newData, bubbles: true }));
       }
 
       resetProductFormState() {
@@ -269,7 +323,7 @@ if (!customElements.get('product-info')) {
       }
 
       updateURL(url, variantId) {
-        const checkedCustomRadio = this.customVariantContainer.querySelector('input[type="radio"]:checked');
+        const checkedCustomRadio = this.customVariantContainer?.querySelector('input[type="radio"]:checked');
         this.querySelector('share-button')?.updateUrl(
           `${window.shopUrl}${url}${variantId ? `?variant=${variantId}` : ''}`
         );
