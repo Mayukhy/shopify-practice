@@ -1,0 +1,101 @@
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+
+{% style %}
+  .section-{{ section.id }}-padding {
+    padding-top: 36px;
+    padding-bottom: 36px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: 52px;
+      padding-bottom: 52px;
+    }
+  }
+  {%  if request.page_type == "product" %}
+    @media screen and (min-width: 1200px) {
+      recommendation-app .slider__slide:first-child {
+        margin-left: 0px !important;
+      }
+    }
+  {% else %}
+    @media screen and (min-width: 1200px) {
+      recommendation-app .slider__slide:first-child {
+        margin-left: 50px !important;
+      }
+    }
+  {% endif %}
+{% endstyle %}
+
+<div class="color-{{ section.settings.color_scheme | default: 'scheme-1' }} isolate gradient">
+  <div class="collection section-{{ section.id }}-padding">
+    <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width">
+      <h2 class="title inline-richtext h1">{{ section.settings.app_section_header }}</h2>
+    </div>
+
+    <recommendation-app
+      data-event-type="{{ section.settings.event_trigger }}"
+      data-section-id="{{ section.id }}"
+    >
+      <slider-component class="slider-mobile-gutter page-width">
+        <!-- Content will be generated dynamically by JavaScript -->
+      </slider-component>
+    </recommendation-app>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "App-recommendations",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "This section is rendered by the Recommendation App. Please use the app's admin to customize the content and appearance of this section."
+    },
+    {
+      "type": "text",
+      "id": "app_section_header",
+      "label": "App Section Header",
+      "default": "Recommended for you"
+    },
+    {
+      "type": "select",
+      "id": "event_trigger",
+      "label": "Event Trigger",
+      "options": [
+        {
+          "value": "PAGE_LOAD",
+          "label": "Page Load"
+        },
+        {
+          "value": "ADD_TO_CART",
+          "label": "Add to Cart"
+        },
+        {
+          "value": "PURCHASE",
+          "label": "Purchase"
+        },
+        {
+          "value": "PRODUCT_VIEW",
+          "label": "Product View"
+        }
+      ],
+      "default": "PAGE_LOAD"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "App Recommendations",
+      "category": "Apps"
+    }
+  ]
+}
+{% endschema %}
