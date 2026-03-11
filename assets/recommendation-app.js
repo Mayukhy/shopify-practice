@@ -5,7 +5,7 @@
  */
 class RecommendationApp extends HTMLElement {
   /** @static @type {string} API endpoint for event tracking */
-  static API_URL = 'https://teeth-passes-leasing-big.trycloudflare.com/api/event';
+  static API_URL = 'https://circles-toddler-minimize-dancing.trycloudflare.com/api/event';
 
   /** @static @type {string} Current Shopify store domain */
   static STORE_DOMAIN = Shopify.shop;
@@ -30,7 +30,7 @@ class RecommendationApp extends HTMLElement {
   */
     if (window.meta && window.meta.product) {
       this.sendEvent('PRODUCT_VIEW', window.meta.product.id.toString(), {
-        title: window.meta.product.title,
+        title: window.meta.product?.title,
         vendor: window.meta.product.vendor,
       });
     }
@@ -110,20 +110,24 @@ class RecommendationApp extends HTMLElement {
     const apiSubEndPoints = {
       ADD_TO_CART: '/',
       PAGE_VIEW: '/',
-      PRODUCT_VIEW: '/get-most-viewed-recommendations',
+      PRODUCT_VIEW: ['/get-most-viewed-recommendations', '/get-related-recommendations'],
     };
 
-    const currentSubEndPoint = apiSubEndPoints[this.eventType];
+    const currentSubEndPoint =
+      window.meta.product ? apiSubEndPoints[this.eventType][1] : apiSubEndPoints[this.eventType][0];
     const payload = {
       storeDomain: RecommendationApp.STORE_DOMAIN,
       storeUserId: this.getSessionId(),
+      ...(window.meta.product && { productId: window.meta.product.id.toString() }),
       limit: 10,
     };
 
     const { storeDomain, storeUserId, limit } = payload;
+
+    const productIdParams = payload.productId ? `&productId=${payload.productId}` : ""
     try {
       const res = await fetch(
-        `${RecommendationApp.API_URL}${currentSubEndPoint}?storeDomain=${storeDomain}&storeUserId=${storeUserId}&limit=${limit}`,
+        `${RecommendationApp.API_URL}${currentSubEndPoint}?storeDomain=${storeDomain}&storeUserId=${storeUserId}&limit=${limit}${productIdParams}`,
         {
           method: 'GET',
           headers: {
@@ -206,15 +210,15 @@ class RecommendationApp extends HTMLElement {
       <div class="card__inner color-scheme-2 gradient ratio" style="--ratio-percent: 100.0%;"><div class="card__media">
             <div class="media media--transparent media--hover-effect">
               
-              <img srcset="${r.product.image}?width=165 165w,${r.product.image}?width=360 360w,${r.product.image}?width=533 533w,${r.product.image}?width=720 720w,${r.product.image}?width=940 940w,${r.product.image}?width=1066 1066w,${r.product.image} 1600w
-                " src="${r.product.image}?width=533" sizes="(min-width: 1200px) 267px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)" alt="${r.product.title}" class="motion-reduce" loading="lazy" width="1600" height="1600">
+              <img srcset="${r.product?.image || r?.image}?width=165 165w,${r.product?.image || r?.image}?width=360 360w,${r.product?.image || r?.image}?width=533 533w,${r.product?.image || r?.image}?width=720 720w,${r.product?.image || r?.image}?width=940 940w,${r.product?.image || r?.image}?width=1066 1066w,${r.product?.image || r?.image} 1600w
+                " src="${r.product?.image}?width=533" sizes="(min-width: 1200px) 267px, (min-width: 990px) calc((100vw - 130px) / 4), (min-width: 750px) calc((100vw - 120px) / 3), calc((100vw - 35px) / 2)" alt="${r.product?.title || r?.title}" class="motion-reduce" loading="lazy" width="1600" height="1600">
               
 </div>
           </div><div class="card__content">
           <div class="card__information">
             <h3 class="card__heading">
-              <a href="/products/${r.product.handle}" id="StandardCardNoMediaLink-${this.sectionId}-${r.product.id}" class="full-unstyled-link" aria-labelledby="StandardCardNoMediaLink-${this.sectionId}-${r.product.id} NoMediaStandardBadge-${this.sectionId}-${r.product.id}">
-                ${r.product.title}
+              <a href="/products/${r.product?.handle || r?.handle}" id="StandardCardNoMediaLink-${this.sectionId}-${r.product?.id || r.id}" class="full-unstyled-link" aria-labelledby="StandardCardNoMediaLink-${this.sectionId}-${r.product?.id || r.id} NoMediaStandardBadge-${this.sectionId}-${r.product?.id || r.id}">
+                ${r.product?.title || r?.title}
               </a>
             </h3>
           </div>
@@ -223,19 +227,19 @@ class RecommendationApp extends HTMLElement {
       </div>
       <div class="card__content">
         <div class="card__information">
-          <h3 class="card__heading h5" id="title-${this.sectionId}-${r.product.id}">
-            <a href="/products/${r.product.handle}" id="CardLink-${this.sectionId}-${r.product.id}" class="full-unstyled-link" aria-labelledby="CardLink-${this.sectionId}-${r.product.id} Badge-${this.sectionId}-${r.product.id}">
-              ${r.product.title}
+          <h3 class="card__heading h5" id="title-${this.sectionId}-${r.product?.id || r.id}">
+            <a href="/products/${r.product?.handle || r?.handle}" id="CardLink-${this.sectionId}-${r.product?.id || r.id}" class="full-unstyled-link" aria-labelledby="CardLink-${this.sectionId}-${r.product?.id || r.id} Badge-${this.sectionId}-${r.product?.id || r.id}">
+              ${r.product?.title || r?.title}
             </a>
           </h3>
           <div class="card-information">
-            ${r.product.vendor ? `<div class="caption-with-letter-spacing light">${r.product.vendor}</div>` : ''}
+            ${r.product?.vendor ? `<div class="caption-with-letter-spacing light">${r.product?.vendor}</div>` : ''}
             <span class="caption-large light"></span>
 <div class="
       price ">
     <div class="price__container"><div class="price__regular"><span class="visually-hidden visually-hidden--inline">Regular price</span>
           <span class="price-item price-item--regular">
-            $${r.product.price}
+            $${r.product?.price || r.price}
           </span></div>
       <div class="price__sale">
           <span class="visually-hidden visually-hidden--inline">Regular price</span>
@@ -247,7 +251,7 @@ class RecommendationApp extends HTMLElement {
             </s>
           </span><span class="visually-hidden visually-hidden--inline">Sale price</span>
         <span class="price-item price-item--sale price-item--last">
-          $${r.product.price}
+          $${r.product?.price || r.price}
         </span>
       </div></div></div>
 
