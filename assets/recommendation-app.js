@@ -113,8 +113,9 @@ class RecommendationApp extends HTMLElement {
       PRODUCT_VIEW: ['/get-most-viewed-recommendations', '/get-related-recommendations'],
     };
 
-    const currentSubEndPoint =
-      window.meta.product ? apiSubEndPoints[this.eventType][1] : apiSubEndPoints[this.eventType][0];
+    const currentSubEndPoint = window.meta.product
+      ? apiSubEndPoints[this.eventType][1]
+      : apiSubEndPoints[this.eventType][0];
     const payload = {
       storeDomain: RecommendationApp.STORE_DOMAIN,
       storeUserId: this.getSessionId(),
@@ -124,7 +125,7 @@ class RecommendationApp extends HTMLElement {
 
     const { storeDomain, storeUserId, limit } = payload;
 
-    const productIdParams = payload.productId ? `&productId=${payload.productId}` : ""
+    const productIdParams = payload.productId ? `&productId=${payload.productId}` : '';
     try {
       const res = await fetch(
         `${RecommendationApp.API_URL}${currentSubEndPoint}?storeDomain=${storeDomain}&storeUserId=${storeUserId}&limit=${limit}${productIdParams}`,
@@ -239,7 +240,7 @@ class RecommendationApp extends HTMLElement {
       price ">
     <div class="price__container"><div class="price__regular"><span class="visually-hidden visually-hidden--inline">Regular price</span>
           <span class="price-item price-item--regular">
-            $${r.product?.price || r.price}
+            $${r.product?.price || r?.price || 0}
           </span></div>
       <div class="price__sale">
           <span class="visually-hidden visually-hidden--inline">Regular price</span>
@@ -251,7 +252,7 @@ class RecommendationApp extends HTMLElement {
             </s>
           </span><span class="visually-hidden visually-hidden--inline">Sale price</span>
         <span class="price-item price-item--sale price-item--last">
-          $${r.product?.price || r.price}
+          $${r.product?.price || r?.price || 0}
         </span>
       </div></div></div>
 
