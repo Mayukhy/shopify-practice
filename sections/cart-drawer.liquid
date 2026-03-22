@@ -1,1 +1,49 @@
-{%- render 'cart-drawer' -%}
+{%-
+  render 'cart-drawer'
+  with
+  cart_recommendations_enabled: section.settings.cart_recommendations_enabled,
+  event_trigger: section.settings.event_trigger
+  section: section
+-%}
+
+{% schema %}
+{
+  "name": "Cart Drawer",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Customize the cart drawer that slides out when products are added to cart."
+    },
+    {
+      "type": "checkbox",
+      "id": "cart_recommendations_enabled",
+      "label": "Enable Cart Recommendations",
+      "default": true
+    },
+    {
+        "type": "text",
+        "id": "app_section_header",
+        "label": "App Section Header",
+        "default": "Recommended for you"
+    },
+    {
+      "type": "select",
+      "id": "event_trigger",
+      "label": "Event Trigger",
+      "options": [
+        {
+          "value": "ADD_TO_CART",
+          "label": "Add to Cart"
+        }
+      ],
+      "default": "ADD_TO_CART"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cart Drawer",
+      "category": "Layout"
+    }
+  ]
+}
+{% endschema %}

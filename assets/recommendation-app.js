@@ -5,7 +5,7 @@
  */
 class RecommendationApp extends HTMLElement {
   /** @static @type {string} API endpoint for event tracking */
-  static API_URL = 'https://circles-toddler-minimize-dancing.trycloudflare.com/api/event';
+  static API_URL = 'https://sci-flux-weekends-tasks.trycloudflare.com/api/event';
 
   /** @static @type {string} Current Shopify store domain */
   static STORE_DOMAIN = Shopify.shop;
@@ -38,7 +38,7 @@ class RecommendationApp extends HTMLElement {
     /*
    ADD TO CART
   */
-    document.addEventListener('click', this.handleAddToCart.bind(this));
+    document.addEventListener('cart:response', this.handleAddToCart.bind(this) )
 
     /*
    PAGE VIEW
@@ -108,14 +108,19 @@ class RecommendationApp extends HTMLElement {
 
   async fetchRecommendations() {
     const apiSubEndPoints = {
-      ADD_TO_CART: '/',
+      ADD_TO_CART: '/get-cart-recommendations',
       PAGE_VIEW: '/',
       PRODUCT_VIEW: ['/get-most-viewed-recommendations', '/get-related-recommendations'],
     };
 
-    const currentSubEndPoint = window.meta.product
-      ? apiSubEndPoints[this.eventType][1]
-      : apiSubEndPoints[this.eventType][0];
+    const currentSubEndPoint =
+      this.eventType === 'PRODUCT_VIEW'
+        ? window.meta.product
+          ? apiSubEndPoints[this.eventType][1]
+          : apiSubEndPoints[this.eventType][0]
+        : this.eventType === 'ADD_TO_CART'
+          ? apiSubEndPoints[this.eventType]
+          : apiSubEndPoints['PAGE_VIEW'];
     const payload = {
       storeDomain: RecommendationApp.STORE_DOMAIN,
       storeUserId: this.getSessionId(),
@@ -124,11 +129,21 @@ class RecommendationApp extends HTMLElement {
     };
 
     const { storeDomain, storeUserId, limit } = payload;
-
-    const productIdParams = payload.productId ? `&productId=${payload.productId}` : '';
+    let productIdParams = payload.productId ? `&productId=${payload.productId}` : '';
+    let cartItemVariants = "";
+    if (this.eventType === 'ADD_TO_CART') {
+      const cartData = await fetch('/cart.js');
+      const res = await cartData.json();
+      console.log("res", res);
+      
+      const itmIds = res.items.map((item) => item.id.toString());
+      console.log("itms", itmIds);
+      productIdParams = this.eventType === 'ADD_TO_CART' ? `&productId=${window.lastCartResponse?.productId || res.items[0].product_id}` : productIdParams;
+      cartItemVariants = itmIds.length > 0 ? `&cartItemVariants=${itmIds.join(',')}` : '';
+    }
     try {
       const res = await fetch(
-        `${RecommendationApp.API_URL}${currentSubEndPoint}?storeDomain=${storeDomain}&storeUserId=${storeUserId}&limit=${limit}${productIdParams}`,
+        `${RecommendationApp.API_URL}${currentSubEndPoint}?storeDomain=${storeDomain}&storeUserId=${storeUserId}&limit=${limit}${productIdParams}${cartItemVariants}`,
         {
           method: 'GET',
           headers: {
@@ -150,12 +165,9 @@ class RecommendationApp extends HTMLElement {
    * @param {Event} event - The click event object
    */
   async handleAddToCart(event) {
-    const addToCartButton = event.target.closest('button[name="add"]');
-    const productForm = event.target.closest('product-form');
-    const productId = productForm?.querySelector('input[name="id"][type="hidden"]')?.value;
-    if (!addToCartButton) return;
+    const productId = event.detail;
     if (productId) {
-      await this.sendEvent('ADD_TO_CART', productId);
+      await this.sendEvent('ADD_TO_CART',productId);
     }
   }
 

@@ -135,6 +135,9 @@ if (!customElements.get('product-form')) {
       }
 
       handleCartResponse(response) {
+        const event = new CustomEvent('cart:response', { detail: response.product_id.toString() });
+        document.dispatchEvent(event);
+        
         if (response.status) {
           publish(PUB_SUB_EVENTS.cartError, {
             source: 'product-form',

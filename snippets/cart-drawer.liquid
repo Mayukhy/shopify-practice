@@ -7,11 +7,39 @@
 
 {{ 'quantity-popover.css' | asset_url | stylesheet_tag }}
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
-
 {{ 'component-cart-message-updater.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
 
 <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
+
+{% style %}
+  .section-{{ section.id }}-padding {
+    padding-top: 36px;
+    padding-bottom: 36px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: 52px;
+      padding-bottom: 52px;
+    }
+  }
+  {%  if request.page_type == "product" %}
+    @media screen and (min-width: 1200px) {
+      recommendation-app .slider__slide:first-child {
+        margin-left: 0px !important;
+      }
+    }
+  {% else %}
+    @media screen and (min-width: 1200px) {
+      recommendation-app .slider__slide:first-child {
+        margin-left: 50px !important;
+      }
+    }
+  {% endif %}
+{% endstyle %}
 
 <style>
   .drawer {
@@ -228,7 +256,11 @@
                                       {{- 'icon-edit.svg' | inline_asset_content -}}
                                     </span>
                                     <span class="cart-message-updater__summary-text">
-                                      {% if item.properties.Message %}{{ "custom_message.edit_text" | t }}{% else %}{{ "custom_message.add_text" | t }}{% endif %}
+                                      {% if item.properties.Message -%}
+                                        {{- 'custom_message.edit_text' | t -}}
+                                      {%- else -%}
+                                        {{- 'custom_message.add_text' | t -}}
+                                      {%- endif %}
                                     </span>
                                     <span class="cart-message-updater__caret">
                                       {{- 'icon-caret.svg' | inline_asset_content -}}
@@ -242,7 +274,7 @@
                                           for="CartDrawer-Message-Input-{{ item.index | plus: 1 }}"
                                           class="cart-message-updater__label"
                                         >
-                                          {{ "custom_message.label" | t }}
+                                          {{ 'custom_message.label' | t }}
                                         </label>
                                         <textarea
                                           id="CartDrawer-Message-Input-{{ item.index | plus: 1 }}"
@@ -258,7 +290,7 @@
                                           id="CartDrawer-Message-HelpText-{{ item.index | plus: 1 }}"
                                           class="cart-message-updater__help-text"
                                         >
-                                          {{ "custom_message.info" | t }}
+                                          {{ 'custom_message.info' | t }}
                                         </div>
                                       </div>
 
@@ -267,14 +299,14 @@
                                           type="button"
                                           class="cart-message-updater__cancel button button--secondary"
                                         >
-                                          {{ "custom_message.cancel_text" | t }}
+                                          {{ 'custom_message.cancel_text' | t }}
                                         </button>
                                         <button
                                           type="submit"
                                           class="cart-message-updater__submit button button--primary"
                                           data-variant-id="{{ item.variant.id }}"
                                         >
-                                          {{ "custom_message.save_text" | t }}
+                                          {{ 'custom_message.save_text' | t }}
                                         </button>
                                       </div>
                                     </form>
@@ -544,6 +576,28 @@
           <div id="CartDrawer-CartErrors" role="alert"></div>
         </form>
       </cart-drawer-items>
+
+      {% comment %} Recommendations are a great way to increase average order value. You can enable product recommendations in the cart drawer to show your customers items they might be interested in based on the contents of their cart. {% endcomment %}
+      {%- if section.settings.cart_recommendations_enabled -%}
+        <div class="drawer__recommendations">
+          <div class="color-{{ section.settings.color_scheme | default: 'scheme-1' }} isolate gradient">
+            <div class="collection section-{{ section.id }}-padding">
+              <div class="collection__title title-wrapper title-wrapper--no-top-margin page-width">
+                <h2 class="title inline-richtext h1">{{ section.settings.app_section_header }}</h2>
+              </div>
+
+              <recommendation-app
+                data-event-type="{{ event_trigger }}"
+                data-section-id="{{ section.id }}"
+              >
+                <slider-component class="slider-mobile-gutter page-width">
+                  <!-- Content will be generated dynamically by JavaScript -->
+                </slider-component>
+              </recommendation-app>
+            </div>
+          </div>
+        </div>
+      {%- endif -%}
       <div class="drawer__footer">
         {%- if settings.show_cart_note -%}
           <details id="Details-CartDrawer">
