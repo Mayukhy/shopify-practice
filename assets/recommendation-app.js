@@ -5,7 +5,7 @@
  */
 class RecommendationApp extends HTMLElement {
   /** @static @type {string} API endpoint for event tracking */
-  static API_URL = 'https://sci-flux-weekends-tasks.trycloudflare.com/api/event';
+  static API_URL = 'https://informed-public-strand-gnome.trycloudflare.com/api/event';
 
   /** @static @type {string} Current Shopify store domain */
   static STORE_DOMAIN = Shopify.shop;
@@ -30,7 +30,7 @@ class RecommendationApp extends HTMLElement {
   */
     if (window.meta && window.meta.product) {
       this.sendEvent('PRODUCT_VIEW', window.meta.product.id.toString(), {
-        title: window.meta.product?.title,
+        title: window.meta.product?.variants[0]?.name,
         vendor: window.meta.product.vendor,
       });
     }
@@ -165,9 +165,12 @@ class RecommendationApp extends HTMLElement {
    * @param {Event} event - The click event object
    */
   async handleAddToCart(event) {
-    const productId = event.detail;
+    const productId = event.detail.product_id.toString();
+    const productTitle = event.detail.product_title;
     if (productId) {
-      await this.sendEvent('ADD_TO_CART',productId);
+      await this.sendEvent('ADD_TO_CART',productId, {
+        title: productTitle,
+      });
     }
   }
 

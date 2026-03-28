@@ -135,7 +135,7 @@ if (!customElements.get('product-form')) {
       }
 
       handleCartResponse(response) {
-        const event = new CustomEvent('cart:response', { detail: response.product_id.toString() });
+        const event = new CustomEvent('cart:response', { detail: response });
         document.dispatchEvent(event);
         
         if (response.status) {
